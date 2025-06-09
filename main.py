@@ -21,7 +21,7 @@ TIMEOUT_DURATION = 5
 ALLOWED_CHANNEL_IDS = [1380891908376760401,1381039725791674490]
 
 KEYWORD_AUTO_REPLIES = {
-    "get": "If you mean the script, go to https://discord.com/channels/1328392700294070313/1374422401147998319",
+    "get": "If you mean the script, go to https://discord.com/channels/1328392700294070313/1374422401147998319.",
     "free": "If you mean the script, then there is definitely no free one.",
     "drop": "Coughing garbage",
     "<@1300017174886350899>": "<:79627innocent:1380543606489612441>",
