@@ -213,10 +213,6 @@ async def on_ready():
     except Exception as e:
         print(f"Failed to send how-to-use message: {e}")
 
-# -------------------------------
-# YouTube feed check
-# -------------------------------
-
 def load_latest_video_id():
     if os.path.exists(LATEST_VIDEO_FILE):
         with open(LATEST_VIDEO_FILE, "r") as f:
