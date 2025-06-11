@@ -184,7 +184,7 @@ async def on_ready():
 
         try:
             if channel:
-                messages = await channel.history(limit=20).flatten()
+                messages = [message async for message in channel.history(limit=20)]
                 already_sent = False
                 for msg in messages:
                     if msg.author == bot.user and msg.embeds:
