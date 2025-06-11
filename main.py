@@ -85,10 +85,6 @@ AUTO_RESPONSES = {
     'refund': "We do not accept refunds.",
 }
 
-# -------------------------------
-# GiftLinkModal (Modal class)
-# -------------------------------
-
 class GiftLinkModal(discord.ui.Modal, title="🧧 Payment System"):
     gift_link = ui.TextInput(
         label="🔗 Enter Gift Link",
