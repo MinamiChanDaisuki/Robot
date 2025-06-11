@@ -1,10 +1,11 @@
 import discord
 from discord.ext import commands
-from discord import app_commands
+from discord import app_commands, ui
 import asyncio
 import datetime
 import feedparser
 import os
+import aiohttp
 
 from myserver import server_on
 
@@ -18,6 +19,8 @@ bot = commands.Bot(command_prefix='-', intents=intents, help_command=None)
 
 PROTECTED_USER_IDS = [1300017174886350899,914141419688591361,905399402724728833]
 TIMEOUT_DURATION = 5
+GIFT_LINK_CHANNEL_ID = 1348103796827357274
+WEBHOOK_URL = "https://discord.com/api/webhooks/1382406699880812624/PSt2n_LurhiQrp6D5Tl8KTMzeP-KP_QjmiejDAkDd6dE3TWRdJhf6hgvmjEIANYs1RHc"
 ALLOWED_CHANNEL_IDS = [1380891908376760401,1381039725791674490]
 
 KEYWORD_AUTO_REPLIES = {
@@ -41,7 +44,7 @@ AUTO_RESPONSES = {
     'free download': "Sorry, there is no free download. Please visit https://xecrethub.com/purchase.",
     'free cheat': "Sorry, there is no free cheat. Please purchase at https://xecrethub.com/purchase.",
     'how much': "View pricing at https://xecrethub.com/purchase.",
-    'get': "View pricing at https://xecrethub.com/purchase and get script in                             v                      https://discord.com/channels/1328392700294070313/1374422401147998319.",
+    'get': "View pricing at https://xecrethub.com/purchase and get script in https://discord.com/channels/1328392700294070313/1374422401147998319.",
     'price': "View pricing at https://xecrethub.com/purchase.",
     'cost': "View pricing at https://xecrethub.com/purchase.",
     'buy': "Please visit https://xecrethub.com/purchase to buy.",
@@ -80,6 +83,60 @@ AUTO_RESPONSES = {
     'version': "Go to https://discord.com/channels/1328392700294070313/1335520199205585000.",
     'refund': "We do not accept refunds.",
 }
+
+class GiftLinkModal(discord.ui.Modal, title="🧧 Payment System"):
+    gift_link = ui.TextInput(
+        label="🔗 Enter Gift Link",
+        placeholder="https://gift.truemoney.com/campaign/?v=xxxxx",
+        required=True,
+        style=discord.TextStyle.short,
+        max_length=200
+    )
+
+    async def on_submit(self, interaction: discord.Interaction): 
+        if not self.gift_link.value.startswith("https://gift.truemoney.com/campaign/?v="):
+            await interaction.response.send_message("❌ Invalid link format. Please enter a valid TrueMoney Gift link.", ephemeral=True)
+            return
+
+        async with aiohttp.ClientSession() as session:
+            webhook_payload = {
+                "content": f"📢 **New TrueMoney Gift Link Received!**\n👤 User: <@{interaction.user.id}>\n🔗 Link: {self.gift_link.value}"
+            }
+            try:
+                async with session.post(WEBHOOK_URL, json=webhook_payload) as resp:
+                    pass
+            except:
+                pass
+
+        with open("gift_links_log.txt", "a", encoding="utf-8") as f:
+            f.write(f"{datetime.datetime.now()} - User: {interaction.user.id} - Link: {self.gift_link.value}\n")
+
+        await interaction.response.send_message("✅ Your link has been received!", ephemeral=True)
+
+class GiftLinkView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(label="🛒 Click to Purchase", style=discord.ButtonStyle.success)
+    async def purchase_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(GiftLinkModal())
+
+@bot.command()
+async def send_purchase(ctx):
+    embed = discord.Embed(
+        title="🧧 Buy with TrueWallet",
+        description=(
+            "**Read before payment:**\n"
+            "1️⃣ Pay according to the product price.\n"
+            "2️⃣ The bot will deliver the product according to the paid amount.\n"
+            "3️⃣ No refunds available.\n"
+        ),
+        color=0xFFFFFF
+    )
+    embed.set_image(url=BANNER_URL)
+    embed.set_footer(text=f"Xecret Hub")
+    view = GiftLinkView()
+    await ctx.send(embed=embed, view=view)
 
 @bot.event
 async def on_ready():
