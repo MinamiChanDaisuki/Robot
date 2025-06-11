@@ -1,55 +1,90 @@
-import discord
-from discord.ext import commands
-from discord import app_commands, ui
-import asyncio
-import datetime
-import feedparser
-import os
-import aiohttp
+    import discord
+    from discord.ext import commands
+    from discord import app_commands, ui
+    import asyncio
+    import datetime
+    import feedparser
+    import os
+    import aiohttp
 
-from myserver import server_on
+    from myserver import server_on
 
-latest_video_id = None
-intents = discord.Intents.default()
-intents.message_content = True
-intents.members = True
+    latest_video_id = None
+    intents = discord.Intents.default()
+    intents.message_content = True
+    intents.members = True
 
-bot = commands.Bot(command_prefix='-', intents=intents, help_command=None)
+    bot = commands.Bot(command_prefix='-', intents=intents, help_command=None)
 
-LATEST_VIDEO_FILE = "latest_video_id.txt"
-PROTECTED_USER_IDS = [1300017174886350899, 914141419688591361, 905399402724728833]
-TIMEOUT_DURATION = 5
-SENT_GIFT_LINKS = set()
-GIFT_LINK_CHANNEL_ID = 1348103796827357274
-WEBHOOK_URL = "https://discord.com/api/webhooks/1382406699880812624/PSt2n_LurhiQrp6D5Tl8KTMzeP-KP_QjmiejDAkDd6dE3TWRdJhf6hgvmjEIANYs1RHc"
-ALLOWED_CHANNEL_IDS = [1380891908376760401, 1381039725791674490]
+    LATEST_VIDEO_FILE = "latest_video_id.txt"
+    PROTECTED_USER_IDS = [1300017174886350899,914141419688591361,905399402724728833]
+    TIMEOUT_DURATION = 5
+    SENT_GIFT_LINKS = set()
+    GIFT_LINK_CHANNEL_ID = 1348103796827357274
+    WEBHOOK_URL = "https://discord.com/api/webhooks/1382406699880812624/PSt2n_LurhiQrp6D5Tl8KTMzeP-KP_QjmiejDAkDd6dE3TWRdJhf6hgvmjEIANYs1RHc"
+    ALLOWED_CHANNEL_IDS = [1380891908376760401,1381039725791674490]
 
-# ---- ส่วน KEYWORD AUTO REPLY ----
-KEYWORD_AUTO_REPLIES = {
-    "get": "If you mean the script, go to https://discord.com/channels/1328392700294070313/1374422401147998319.",
-    "free": "If you mean the script, then there is definitely no free one.",
-    "drop": "Coughing garbage",
-    "<@1300017174886350899>": "<:79627innocent:1380543606489612441>",
-    "<@914141419688591361>": "<:79627innocent:1380543606489612441>",
-    "<@905399402724728833>": "<:79627innocent:1380543606489612441>",
-}
+    KEYWORD_AUTO_REPLIES = {
+        "get": "If you mean the script, go to https://discord.com/channels/1328392700294070313/1374422401147998319.",
+        "free": "If you mean the script, then there is definitely no free one.",
+        "drop": "Coughing garbage",
+        "<@1300017174886350899>": "<:79627innocent:1380543606489612441>",
+        "<@914141419688591361>": "<:79627innocent:1380543606489612441>",
+        "<@905399402724728833>": "<:79627innocent:1380543606489612441>",
+    }
 
-# ---- WHITELIST ----
-WHITELIST_USER_IDS = []
+    WHITELIST_USER_IDS = []
 
-# ---- CONFIG ----
-BANNER_URL = 'https://media.discordapp.net/attachments/1378599490902298654/1380901765372973156/Banner.png?ex=6845907c&is=68443efc&hm=865a9ce85dee2225552441fa2d48298745c60c8da1447716b5ab57e5cb31eab8&=&format=webp&quality=lossless&width=1536&height=864'
+    BANNER_URL = 'https://media.discordapp.net/attachments/1378599490902298654/1380901765372973156/Banner.png?ex=6845907c&is=68443efc&hm=865a9ce85dee2225552441fa2d48298745c60c8da1447716b5ab57e5cb31eab8&=&format=webp&quality=lossless&width=1536&height=864'
 
-BAD_WORDS = ['fuck', 'worst', 'bad', 'suck', 'shit', 'source', 'drop', 'free', 'leak']
+    BAD_WORDS = ['fuck','worst','bad','suck','shit','source','drop','free','leak']
 
-# ---- AUTO_RESPONSES ----
-AUTO_RESPONSES = {
-    'free': "Sorry, there is no free script. Please go to https://xecrethub.com/purchase.",
-    # ... (ตัดมาเหมือนที่นัทสึมี ไม่ต้องแก้เลย)
-    'refund': "We do not accept refunds.",
-}
+    AUTO_RESPONSES = {
+        'free': "Sorry, there is no free script. Please go to https://xecrethub.com/purchase.",
+        'free script': "Sorry, there is no free script. Please go to https://xecrethub.com/purchase.",
+        'free download': "Sorry, there is no free download. Please visit https://xecrethub.com/purchase.",
+        'free cheat': "Sorry, there is no free cheat. Please purchase at https://xecrethub.com/purchase.",
+        'how much': "View pricing at https://xecrethub.com/purchase.",
+        'get': "View pricing at https://xecrethub.com/purchase and get script in https://discord.com/channels/1328392700294070313/1374422401147998319.",
+        'price': "View pricing at https://xecrethub.com/purchase.",
+        'cost': "View pricing at https://xecrethub.com/purchase.",
+        'buy': "Please visit https://xecrethub.com/purchase to buy.",
+        'video': "Go to https://discord.com/channels/1328392700294070313/1328406450489393253.",
+        'vid': "Go to https://discord.com/channels/1328392700294070313/1328406450489393253.",
+        'show': "Go to https://discord.com/channels/1328392700294070313/1328406450489393253.",
+        'showcase': "Go to https://discord.com/channels/1328392700294070313/1328406450489393253.",
+        'example': "example Video Here: https://discord.com/channels/1328392700294070313/1328406450489393253.",
+        'purchase': "Please visit https://xecrethub.com/purchase to purchase.",
+        'payment': "You can purchase here: https://xecrethub.com/purchase.",
+        'supported games': "You can check supported games here: https://xecrethub.com/supported-games.",
+        'games list': "You can check supported games here: https://xecrethub.com/supported-games.",
+        'game support': "Supported games are listed here: https://xecrethub.com/supported-games.",
+        'game': "Supported games are listed here: https://xecrethub.com/supported-games.",
+        'supported executors': "You can check supported executors here: https://xecrethub.com/executors.",
+        'executors list': "You can check supported executors here: https://xecrethub.com/executors.",
+        'executor support': "Supported executors are listed here: https://xecrethub.com/executors.",
+        'executor': "Supported executors are listed here: https://xecrethub.com/executors.",
+        'login': "Login here: https://xecrethub.com/loginsignup.",
+        'sign up': "Sign up here: https://xecrethub.com/loginsignup.",
+        'register': "Register here: https://xecrethub.com/loginsignup.",
+        'account': "Manage your account here: https://xecrethub.com/loginsignup.",
+        'help': "Go to https://discord.com/channels/1328392700294070313/1348578938024104006 or use -help command.",
+        'website': "Visit https://xecrethub.com.",
+        'site': "Visit https://xecrethub.com.",
+        'web': "Visit https://xecrethub.com.",
+        'official site': "Visit https://xecrethub.com.",
+        'official website': "Visit https://xecrethub.com.",
+        'support': "For support, please visit https://xecrethub.com or use -help command.",
+        'discord': "Join our Discord here: https://discord.gg/xecrethub.",
+        'discord link': "Join our Discord here: https://discord.gg/xecrethub.",
+        'error': "If you encounter an error, please contact support via https://discord.com/channels/1328392700294070313/1348578938024104006.",
+        'not working': "If something is not working, please contact support via https://discord.com/channels/1328392700294070313/1348578938024104006.",
+        'how to use': "You can read how to use at https://xecrethub.com and use -help command.",
+        'update': "Go to https://discord.com/channels/1328392700294070313/1335520199205585000.",
+        'version': "Go to https://discord.com/channels/1328392700294070313/1335520199205585000.",
+        'refund': "We do not accept refunds.",
+    }
 
-# ---- GIFT LINK MODAL ----
 class GiftLinkModal(discord.ui.Modal, title="🧧 Payment System"):
     gift_link = ui.TextInput(
         label="🔗 Enter Gift Link",
@@ -59,30 +94,22 @@ class GiftLinkModal(discord.ui.Modal, title="🧧 Payment System"):
         max_length=200
     )
 
-    async def on_submit(self, interaction: discord.Interaction):
+    async def on_submit(self, interaction: discord.Interaction):   
         if not self.gift_link.value.startswith("https://gift.truemoney.com/campaign/?v="):
-            await interaction.response.send_message(
-                "❌ Invalid link format. Please enter a valid TrueMoney Gift link.",
-                ephemeral=True
-            )
+            await interaction.response.send_message("❌ Invalid link format. Please enter a valid TrueMoney Gift link.", ephemeral=True)
             return
 
         global SENT_GIFT_LINKS
 
         if self.gift_link.value in SENT_GIFT_LINKS:
-            await interaction.response.send_message(
-                "⚠️ This Gift link has already been submitted before. Please check again.",
-                ephemeral=True
-            )
+            await interaction.response.send_message("⚠️ This Gift link has already been submitted before. Please check again.", ephemeral=True)
             return
 
         SENT_GIFT_LINKS.add(self.gift_link.value)
 
         async with aiohttp.ClientSession() as session:
             webhook_payload = {
-                "content": f"📢 **New TrueMoney Gift Link Received!**\n"
-                           f"👤 User: <@{interaction.user.id}>\n"
-                           f"🔗 Link: {self.gift_link.value}"
+                "content": f"📢 **New TrueMoney Gift Link Received!**\n👤 User: <@{interaction.user.id}>\n🔗 Link: {self.gift_link.value}"
             }
             try:
                 async with session.post(WEBHOOK_URL, json=webhook_payload) as resp:
@@ -95,7 +122,7 @@ class GiftLinkModal(discord.ui.Modal, title="🧧 Payment System"):
 
         await interaction.response.send_message("✅ Your link has been received!", ephemeral=True)
 
-# ---- GIFT LINK VIEW ----
+# ย้าย GiftLinkView มานอก class GiftLinkModal ตรงนี้ 👇
 class GiftLinkView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -104,10 +131,10 @@ class GiftLinkView(discord.ui.View):
     async def purchase_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(GiftLinkModal())
 
-# ---- SEND PURCHASE ----
+
 @bot.command()
 async def send_purchase(ctx):
-    if ctx.channel.id != GIFT_LINK_CHANNEL_ID:
+    if ctx.channel.id != 1348103796827357274:
         await ctx.send("❌ You can use this command only in the purchase channel.", delete_after=5)
         try:
             await ctx.message.delete()
@@ -126,118 +153,57 @@ async def send_purchase(ctx):
         color=0xFFFFFF
     )
     embed.set_image(url=BANNER_URL)
-    embed.set_footer(text="Xecret Hub")
-
+    embed.set_footer(text=f"Xecret Hub")
     view = GiftLinkView()
     await ctx.send(embed=embed, view=view)
 
-# ---- YOUTUBE FUNCTIONS (Global) ----
-def load_latest_video_id():
-    if os.path.exists(LATEST_VIDEO_FILE):
-        with open(LATEST_VIDEO_FILE, "r") as f:
-            return f.read().strip()
-    return None
+    @bot.event
+    async def on_ready():
+        await bot.wait_until_ready()
+        print(f'Bot is now online: {bot.user}')
+        await bot.change_presence(
+            status=discord.Status.dnd,
+            activity=discord.Activity(type=discord.ActivityType.watching, name="https://xecrethub.com")
+        )
 
-def save_latest_video_id(video_id):
-    with open(LATEST_VIDEO_FILE, "w") as f:
-        f.write(video_id)
-
-async def youtube_feed_check_loop():
-    global latest_video_id
-    latest_video_id = load_latest_video_id() 
-
-    await bot.wait_until_ready()
-
-    channel = bot.get_channel(1328406450489393253)
-    feed_url = 'https://www.youtube.com/feeds/videos.xml?channel_id=UC5abJGhz74y-cw88wFqX0Jw'
-
-    while not bot.is_closed():
+        channel = bot.get_channel(1381039725791674490)
+        bot.loop.create_task(youtube_feed_check_loop())
+        print(f"Channel fetched: {channel}")  
         try:
-            feed = feedparser.parse(feed_url)
-            print(f"[YouTube Feed Check] Found {len(feed.entries)} entries.") 
-
-            if feed.entries:
-                latest_entry = feed.entries[0]
-
-                try:
-                    video_id = latest_entry.yt_videoid
-                except AttributeError:
-                    if "youtube.com/watch?v=" in latest_entry.link:
-                        video_id = latest_entry.link.split("v=")[1].split("&")[0]
-                    elif "youtu.be/" in latest_entry.link:
-                        video_id = latest_entry.link.split("youtu.be/")[1].split("?")[0]
-                    else:
-                        video_id = None
-
-                video_title = latest_entry.title
-                video_url = f"https://www.youtube.com/watch?v={video_id}"
-
-                if latest_video_id != video_id:
-                    latest_video_id = video_id
-                    save_latest_video_id(video_id) 
-
-                    if channel:
-                        await channel.send(f"📢 **New Video Posted on XecretHub!**\n{video_url}")
-                        print(f"[YouTube Feed Check] Posted new video: {video_title} ({video_url})")
-                    else:
-                        print("❌ Could not find the target Discord channel.")
-                else:
-                    print(f"[YouTube Feed Check] Latest video already posted: {video_id}")
-
+            guild = discord.Object(id=1328392700294070313)  
+            synced = await bot.tree.sync(guild=guild)
+            print(f"Synced {len(synced)} slash commands.")
         except Exception as e:
-            print(f"Error checking YouTube feed: {e}")
+            print(f"Failed to sync commands: {e}")
 
-        await asyncio.sleep(300)
+        if channel:
+            try:
+                messages = await channel.history(limit=20).flatten()
+                already_sent = False
+                for msg in messages:
+                    if msg.author == bot.user and msg.embeds:
+                        embed = msg.embeds[0]
+                        if embed.title == "How to use the question?":
+                            already_sent = True
+                            print("How-to-use message already exists. Skipping send.")
+                            break
 
-# ---- ON_READY ----
-@bot.event
-async def on_ready():
-    await bot.wait_until_ready()
-    print(f'Bot is now online: {bot.user}')
-    await bot.change_presence(
-        status=discord.Status.dnd,
-        activity=discord.Activity(type=discord.ActivityType.watching, name="https://xecrethub.com")
-    )
+                if not already_sent:
+                    embed = discord.Embed(title="How to use the question?", color=0xFFFFFF)
+                    embed.add_field(
+                        name="/question",
+                        value="Ask a question and get an automatic reply.\nExample: `/question how much`",
+                        inline=False
+                    )
+                    embed.set_footer(text=f"https://xecrethub.com | Sent at {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                    embed.image(url=BANNER_URL)
+                    await channel.send(embed=embed)
+                    print("Sent how-to-use message to #1381039725791674490")
 
-    channel = bot.get_channel(1381039725791674490)
-    bot.loop.create_task(youtube_feed_check_loop())
-    print(f"Channel fetched: {channel}")
-
-    try:
-        guild = discord.Object(id=1328392700294070313)
-        synced = await bot.tree.sync(guild=guild)
-        print(f"Synced {len(synced)} slash commands.")
-    except Exception as e:
-        print(f"Failed to sync commands: {e}")
-
-    if channel:
-        try:
-            messages = await channel.history(limit=20).flatten()
-            already_sent = False
-            for msg in messages:
-                if msg.author == bot.user and msg.embeds:
-                    embed = msg.embeds[0]
-                    if embed.title == "How to use the question?":
-                        already_sent = True
-                        print("How-to-use message already exists. Skipping send.")
-                        break
-
-            if not already_sent:
-                embed = discord.Embed(title="How to use the question?", color=0xFFFFFF)
-                embed.add_field(
-                    name="/question",
-                    value="Ask a question and get an automatic reply.\nExample: `/question how much`",
-                    inline=False
-                )
-                embed.set_footer(text=f"https://xecrethub.com | Sent at {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-                embed.set_image(url=BANNER_URL)
-                await channel.send(embed=embed)
-                print("Sent how-to-use message to #1381039725791674490")
-
-        except Exception as e:
-            print(f"Failed to send how-to-use message: {e}")
-    else:
-        print("Could not find channel. Check permissions or guild.")
+            except Exception as e:
+                print(f"Failed to send how-to-use message: {e}")
+        else:
+            print("Could not find channel. Check permissions or guild.")
 
     def load_latest_video_id():
         if os.path.exists(LATEST_VIDEO_FILE):
