@@ -552,6 +552,6 @@ async def question(interaction: discord.Interaction, query: str):
                 await msg.delete()
             except Exception as e:
                 print(f"Failed to delete message: {e}")
-    server_on()
 
-    bot.run(os.getenv('TOKEN'))
+server_on()
+bot.run(os.getenv('TOKEN'))
