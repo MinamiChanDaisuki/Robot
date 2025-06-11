@@ -153,7 +153,7 @@ async def send_purchase(ctx):
             description=(
                 "**Read before payment:**\n"
                 "1️⃣ Pay according to the product price.\n"
-                "2️⃣ Waiting for admin to come check..\n"
+                "2️⃣ Waiting for admin to come check.\n"
                 "3️⃣ No refunds available.\n"
             ),
             color=0xFFFFFF
