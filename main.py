@@ -17,6 +17,7 @@ bot = commands.Bot(command_prefix='-', intents=intents, help_command=None)
 
 LATEST_VIDEO_FILE = "latest_video_id.txt"
 PROTECTED_USER_IDS = [1300017174886350899, 914141419688591361, 905399402724728833]
+ALLOWED_PING_ROLE_IDS = [1372913561411653682, 1382367857639166034, 1381271716281712752, 1382360867756183592, 1380500481042026566, 1354409237572354090]
 TIMEOUT_DURATION = 5
 ALLOWED_CHANNEL_IDS = [1380891908376760401, 1381039725791674490]
 
@@ -259,22 +260,31 @@ async def on_message(message):
                     break 
 
             if any(user.id in PROTECTED_USER_IDS for user in message.mentions):
-                try:
-                    await message.delete()
-                    await message.channel.send(
-                        f"<@{message.author.id}>, you are not allowed to ping this user. You have been timed out for {TIMEOUT_DURATION} seconds.",
-                        delete_after=5
-                    )
-                    timed_out_until = discord.utils.utcnow() + datetime.timedelta(seconds=TIMEOUT_DURATION)
-                    await message.author.edit(timed_out_until=timed_out_until, reason="Pinged protected user")
+                # Check if user has any of the allowed roles
+                user_has_allowed_role = False
+                if hasattr(message.author, 'roles'):
+                    for role in message.author.roles:
+                        if role.id in ALLOWED_PING_ROLE_IDS:
+                            user_has_allowed_role = True
+                            break
+                
+                if not user_has_allowed_role:
                     try:
-                        await message.author.send(
-                            f"You Ping, the person who is working, are so annoying. Go die. You have been timed out for {TIMEOUT_DURATION} seconds."
+                        await message.delete()
+                        await message.channel.send(
+                            f"<@{message.author.id}>, you are not allowed to ping this user. You have been timed out for {TIMEOUT_DURATION} seconds.",
+                            delete_after=5
                         )
+                        timed_out_until = discord.utils.utcnow() + datetime.timedelta(seconds=TIMEOUT_DURATION)
+                        await message.author.edit(timed_out_until=timed_out_until, reason="Pinged protected user")
+                        try:
+                            await message.author.send(
+                                f"You Ping, the person who is working, are so annoying. Go die. You have been timed out for {TIMEOUT_DURATION} seconds."
+                            )
+                        except:
+                            pass
                     except:
                         pass
-                except:
-                    pass
 
             if message.author.id not in WHITELIST_USER_IDS and any(bad_word in message.content.lower() for bad_word in BAD_WORDS):
                 try:
