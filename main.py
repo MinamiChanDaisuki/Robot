@@ -169,7 +169,7 @@ async def youtube_feed_check_loop():
                         save_latest_video_id(video_id)
 
                         if channel:
-                            # Check if this video URL has already been sent in the channel
+
                             video_already_sent = False
                             try:
                                 async for old_message in channel.history(limit=50):
@@ -181,7 +181,7 @@ async def youtube_feed_check_loop():
                                 print(f"[YouTube Feed Check] Error checking message history: {e}")
 
                             if not video_already_sent:
-                                await channel.send(f"📢 **New Video Posted on XecretHub!**\n{video_url}")
+                                await channel.send(f"<@&1383766143939903528>\n📢 **New Video Posted on XecretHub!**\n{video_url}")
                                 print(f"[YouTube Feed Check] Posted new video: {video_title} ({video_url})")
                             else:
                                 print(f"[YouTube Feed Check] Skipped duplicate video: {video_url}")
@@ -264,7 +264,7 @@ async def on_message(message):
                         if role.id in ALLOWED_PING_ROLE_IDS:
                             user_has_allowed_role = True
                             break
-                
+
                 if not user_has_allowed_role:
                     try:
                         await message.delete()
