@@ -58,10 +58,10 @@ AUTO_RESPONSES = {
         'executors list': "You can check supported executors here: https://xecrethub.com/executors.",
         'executor support': "Supported executors are listed here: https://xecrethub.com/executors.",
         'executor': "Supported executors are listed here: https://xecrethub.com/executors.",
-        'login': "Login here: https://xecrethub.com/loginsignup.",
-        'sign up': "Sign up here: https://xecrethub.com/loginsignup.",
-        'register': "Register here: https://xecrethub.com/loginsignup.",
-        'account': "Manage your account here: https://xecrethub.com/loginsignup.",
+        'login': "Login here: https://xecrethub.com/login.",
+        'sign up': "Sign up here: https://xecrethub.com/login.",
+        'register': "Register here: https://xecrethub.com/login.",
+        'account': "Manage your account here: https://xecrethub.com/login.",
         'help': "Go to https://discord.com/channels/1328392700294070313/1348578938024104006 or use -help command.",
         'website': "Visit https://xecrethub.com.",
         'site': "Visit https://xecrethub.com.",
@@ -214,7 +214,7 @@ async def send_buttons(ctx):
             view.add_item(discord.ui.Button(label="Supported Games", url="https://xecrethub.com/games"))
             view.add_item(discord.ui.Button(label="Supported Executors", url="https://xecrethub.com/executors"))
             view.add_item(discord.ui.Button(label="Purchase", url="https://xecrethub.com/purchase"))
-            view.add_item(discord.ui.Button(label="Login / Sign Up", url="https://xecrethub.com/loginsignup"))
+            view.add_item(discord.ui.Button(label="Login / Sign Up", url="https://xecrethub.com/login"))
 
             await ctx.send(embed=embed, view=view)
 
@@ -396,7 +396,7 @@ async def purchase(ctx):
 async def loginsignup(ctx):
             embed = discord.Embed(
                 title="Login / Sign Up",
-                description="[Login / Sign Up](https://xecrethub.com/loginsignup)",
+                description="[Login / Sign Up](https://xecrethub.com/login)",
                 color=0xFFFFFF
             )
             embed.set_image(url=BANNER_URL)
