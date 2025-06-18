@@ -18,7 +18,7 @@ bot = commands.Bot(command_prefix='-', intents=intents, help_command=None)
 LATEST_VIDEO_FILE = "latest_video_id.txt"
 PROTECTED_USER_IDS = [1300017174886350899, 914141419688591361, 905399402724728833]
 ALLOWED_PING_ROLE_IDS = [1382595907505356864,1382367857639166034,1381271716281712752,1372913561411653682,1354409237572354090]
-TIMEOUT_DURATION = 5
+TIMEOUT_DURATION = 5f
 ALLOWED_CHANNEL_IDS = [1380891908376760401, 1381039725791674490]
 
 KEYWORD_AUTO_REPLIES = {
@@ -50,10 +50,10 @@ AUTO_RESPONSES = {
         'example': "example Video Here: https://discord.com/channels/1328392700294070313/1328406450489393253.",
         'purchase': "Please visit https://xecrethub.com/purchase to purchase.",
         'payment': "You can purchase here: https://xecrethub.com/purchase.",
-        'supported games': "You can check supported games here: https://xecrethub.com/supported-games.",
-        'games list': "You can check supported games here: https://xecrethub.com/supported-games.",
-        'game support': "Supported games are listed here: https://xecrethub.com/supported-games.",
-        'game': "Supported games are listed here: https://xecrethub.com/supported-games.",
+        'supported games': "You can check supported games here: https://xecrethub.com/games.",
+        'games list': "You can check supported games here: https://xecrethub.com/games.",
+        'game support': "Supported games are listed here: https://xecrethub.com/games.",
+        'game': "Supported games are listed here: https://xecrethub.com/games.",
         'supported executors': "You can check supported executors here: https://xecrethub.com/executors.",
         'executors list': "You can check supported executors here: https://xecrethub.com/executors.",
         'executor support': "Supported executors are listed here: https://xecrethub.com/executors.",
@@ -211,7 +211,7 @@ async def send_buttons(ctx):
             view = discord.ui.View(timeout=None)
 
             view.add_item(discord.ui.Button(label="Visit Website", url="https://xecrethub.com"))
-            view.add_item(discord.ui.Button(label="Supported Games", url="https://xecrethub.com/supported-games"))
+            view.add_item(discord.ui.Button(label="Supported Games", url="https://xecrethub.com/games"))
             view.add_item(discord.ui.Button(label="Supported Executors", url="https://xecrethub.com/executors"))
             view.add_item(discord.ui.Button(label="Purchase", url="https://xecrethub.com/purchase"))
             view.add_item(discord.ui.Button(label="Login / Sign Up", url="https://xecrethub.com/loginsignup"))
@@ -366,7 +366,7 @@ async def website(ctx):
 async def supported_games(ctx):
             embed = discord.Embed(
                 title="Supported Games",
-                description="https://xecrethub.com/supported-games",
+                description="https://xecrethub.com/games",
                 color=0xFFFFFF
             )
             embed.set_image(url=BANNER_URL)
