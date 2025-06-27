@@ -1,4 +1,3 @@
-
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -6,6 +5,7 @@ import asyncio
 import datetime
 import feedparser
 import os
+import requests
 
 from myserver import server_on
 
@@ -15,6 +15,9 @@ intents.message_content = True
 intents.members = True
 
 bot = commands.Bot(command_prefix='-', intents=intents, help_command=None)
+
+TARGET_BOT_ID = 1296471355994144891
+WEBHOOK_URL = 'https://discord.com/api/webhooks/1388141396145344606/i7-JI-J6lhNFtEzTJQeaQCOJcSSd8YaLUW57C9SPe4u67V_91ilPvxq7DVb0d4UyqeQA'
 
 LATEST_VIDEO_FILE = "latest_video_id.txt"
 PROTECTED_USER_IDS = [1300017174886350899, 914141419688591361, 905399402724728833]
@@ -167,6 +170,7 @@ async def youtube_feed_check_loop():
                         save_latest_video_id(video_id)
 
                         if channel:
+
                             video_already_sent = False
                             try:
                                 async for old_message in channel.history(limit=50):
@@ -254,6 +258,7 @@ async def on_message(message):
                     break 
 
             if any(user.id in PROTECTED_USER_IDS for user in message.mentions):
+                # Check if user has any of the allowed roles
                 user_has_allowed_role = False
                 if hasattr(message.author, 'roles'):
                     for role in message.author.roles:
@@ -488,6 +493,55 @@ async def question(interaction: discord.Interaction, query: str):
                 await msg.delete()
             except Exception as e:
                 print(f"Failed to delete message: {e}")
+
+intents = discord.Intents.default()
+intents.message_content = True
+intents.guilds = True
+intents.messages = True
+
+client = discord.Client(intents=intents)
+
+@client.event
+async def on_ready():
+    print(f'✅ Logged in as {client.user}')
+
+@client.event
+async def on_message(message):
+ 
+    if message.author.id != TARGET_BOT_ID:
+        return
+
+    if 'whitelisted' not in message.content.lower():
+        return
+
+    history = [msg async for msg in message.channel.history(limit=2)]
+    prev_msg = next((m for m in history if m.id != message.id), None)
+
+    embed = {
+        "title": "📌 Detect whitelisting",
+        "color": 0x00ff99,
+        "fields": [
+            {
+                "name": "✅ Bot message reply",
+                "value": f"```{message.content}```"
+            },
+            {
+                "name": "👤 Previous message by",
+                "value": f"**{prev_msg.author if prev_msg else 'ไม่พบ'}**: {prev_msg.content if prev_msg else 'ไม่พบข้อความ'}"
+            }
+        ]
+    }
+
+    payload = {
+        "embeds": [embed]
+    }
+
+    response = requests.post(WEBHOOK_URL, json=payload)
+    if response.status_code == 204:
+        print("🚀 Webhook sent successfully")
+    else:
+        print(f"❌ An error occurred: {response.status_code} {response.text}")
+
 
 server_on()
 bot.run(os.getenv('TOKEN'))
