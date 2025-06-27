@@ -1,3 +1,4 @@
+
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -166,7 +167,6 @@ async def youtube_feed_check_loop():
                         save_latest_video_id(video_id)
 
                         if channel:
-
                             video_already_sent = False
                             try:
                                 async for old_message in channel.history(limit=50):
@@ -254,7 +254,6 @@ async def on_message(message):
                     break 
 
             if any(user.id in PROTECTED_USER_IDS for user in message.mentions):
-                # Check if user has any of the allowed roles
                 user_has_allowed_role = False
                 if hasattr(message.author, 'roles'):
                     for role in message.author.roles:
