@@ -5,7 +5,7 @@ import asyncio
 import datetime
 import feedparser
 import os
-import requests
+import requests 
 
 from myserver import server_on
 
@@ -219,6 +219,33 @@ async def send_buttons(ctx):
 
             await ctx.send(embed=embed, view=view)
 
+async def send_webhook_notification(message, prev_msg):
+    embed = {
+        "title": "📌 Detect whitelisting",
+        "color": 0x00ff99,
+        "fields": [
+            {
+                "name": "✅ Bot message reply",
+                "value": f"```{message.content}```"
+            },
+            {
+                "name": "👤 Previous message by",
+                "value": f"**{prev_msg.author if prev_msg else 'Not Found'}**: {prev_msg.content if prev_msg else 'Not Found Message'}"
+            }
+        ]
+    }
+
+    payload = {
+        "embeds": [embed]
+    }
+
+    try:
+        response = requests.post(WEBHOOK_URL, json=payload)
+        response.raise_for_status()  
+        print("🚀 Webhook sent successfully")
+    except requests.exceptions.RequestException as e:
+        print(f"❌ An error occurred: {e}")
+
 @bot.event
 async def on_message(message):
             if message.author == bot.user:
@@ -258,7 +285,7 @@ async def on_message(message):
                     break 
 
             if any(user.id in PROTECTED_USER_IDS for user in message.mentions):
-                # Check if user has any of the allowed roles
+                
                 user_has_allowed_role = False
                 if hasattr(message.author, 'roles'):
                     for role in message.author.roles:
@@ -347,6 +374,15 @@ async def on_message(message):
 
                 await bot.process_commands(message)
                 return
+            
+            # Check for webhook notification
+            if message.author.id == TARGET_BOT_ID and 'whitelisted' in message.content.lower():
+                try:
+                    history = [msg async for msg in message.channel.history(limit=2)]
+                    prev_msg = next((m for m in history if m.id != message.id), None)
+                    await send_webhook_notification(message, prev_msg)
+                except Exception as e:
+                    print(f"Error processing webhook notification: {e}")
 
             await bot.process_commands(message)
 
@@ -493,54 +529,6 @@ async def question(interaction: discord.Interaction, query: str):
                 await msg.delete()
             except Exception as e:
                 print(f"Failed to delete message: {e}")
-
-intents = discord.Intents.default()
-intents.message_content = True
-intents.guilds = True
-intents.messages = True
-
-client = discord.Client(intents=intents)
-
-@client.event
-async def on_ready():
-    print(f'✅ Logged in as {client.user}')
-
-@client.event
-async def on_message(message):
- 
-    if message.author.id != TARGET_BOT_ID:
-        return
-
-    if 'whitelisted' not in message.content.lower():
-        return
-
-    history = [msg async for msg in message.channel.history(limit=2)]
-    prev_msg = next((m for m in history if m.id != message.id), None)
-
-    embed = {
-        "title": "📌 Detect whitelisting",
-        "color": 0x00ff99,
-        "fields": [
-            {
-                "name": "✅ Bot message reply",
-                "value": f"```{message.content}```"
-            },
-            {
-                "name": "👤 Previous message by",
-                "value": f"**{prev_msg.author if prev_msg else 'ไม่พบ'}**: {prev_msg.content if prev_msg else 'ไม่พบข้อความ'}"
-            }
-        ]
-    }
-
-    payload = {
-        "embeds": [embed]
-    }
-
-    response = requests.post(WEBHOOK_URL, json=payload)
-    if response.status_code == 204:
-        print("🚀 Webhook sent successfully")
-    else:
-        print(f"❌ An error occurred: {response.status_code} {response.text}")
 
 
 server_on()
