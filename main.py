@@ -484,8 +484,27 @@ async def help(ctx):
 
 @bot.command()
 @commands.has_permissions(administrator=True)
-async def send(ctx, *, message: str):
-            await ctx.send(message)
+async def send(ctx, *, args: str):
+            parts = args.split()
+            
+            if len(parts) >= 2:
+                potential_channel_id = parts[-1]
+                if potential_channel_id.isdigit() and len(potential_channel_id) >= 15:
+                    try:
+                        channel_id = int(potential_channel_id)
+                        target_channel = bot.get_channel(channel_id)
+                        if target_channel:
+                            message = ' '.join(parts[:-1])
+                            await target_channel.send(message)
+                        else:
+                            await ctx.send("Channel not found.")
+                    except ValueError:
+                        await ctx.send(args)
+                else:
+                    await ctx.send(args)
+            else:
+                await ctx.send(args)
+            
             try:
                 await ctx.message.delete()
             except:
