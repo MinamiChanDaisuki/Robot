@@ -17,7 +17,6 @@ intents.members = True
 bot = commands.Bot(command_prefix='-', intents=intents, help_command=None)
 
 TARGET_BOT_ID = 1296471355994144891
-WEBHOOK_URL = 'https://discord.com/api/webhooks/1388693174242770994/u1mkGh_qwEKqLUkrqVkzk5cTLkRGVpYd52nGGe-mYriL4X84vZPtwc0_gkXLrj6_PSAt'
 
 LATEST_VIDEO_FILE = "latest_video_id.txt"
 PROTECTED_USER_IDS = [1300017174886350899, 914141419688591361, 905399402724728833]
@@ -240,11 +239,9 @@ async def send_webhook_notification(message, prev_msg):
     }
 
     try:
-        response = requests.post(WEBHOOK_URL, json=payload)
+        response = requests.post(os.getenv('KEY_WEBHOOK'), json=payload)
         response.raise_for_status()  
-        print("🚀 Webhook sent successfully")
     except requests.exceptions.RequestException as e:
-        print(f"❌ An error occurred: {e}")
 
 @bot.event
 async def on_message(message):
@@ -375,7 +372,6 @@ async def on_message(message):
                 await bot.process_commands(message)
                 return
             
-            # Check for webhook notification
             if message.author.id == TARGET_BOT_ID and 'whitelisted' in message.content.lower():
                 try:
                     history = [msg async for msg in message.channel.history(limit=2)]
