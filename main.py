@@ -238,8 +238,10 @@ async def send_webhook_notification(message, whitelist_msg):
         target_role = guild.get_role(target_role_id)
         if target_role:
             try:
-                async for msg in message.channel.history(limit=50):
-                    if msg.author in target_role.members and msg.author not in [m.split('ID: `')[1].split('`')[0] for m in role_members if 'ID: `' in m]:
+                seen_users = set()
+                async for msg in message.channel.history(limit=100):
+                    if msg.author in target_role.members and msg.author.id not in seen_users:
+                        seen_users.add(msg.author.id)
                         role_members.append(f"**{msg.author.display_name}** (`{msg.author.name}`) - ID: `{msg.author.id}`")
             except Exception as e:
                 pass
@@ -486,7 +488,7 @@ async def help(ctx):
 @commands.has_permissions(administrator=True)
 async def send(ctx, *, args: str):
             parts = args.split()
-            
+
             if len(parts) >= 2:
                 potential_channel_id = parts[-1]
                 if potential_channel_id.isdigit() and len(potential_channel_id) >= 15:
@@ -504,7 +506,7 @@ async def send(ctx, *, args: str):
                     await ctx.send(args)
             else:
                 await ctx.send(args)
-            
+
             try:
                 await ctx.message.delete()
             except:
