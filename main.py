@@ -219,20 +219,17 @@ async def send_buttons(ctx):
             await ctx.send(embed=embed, view=view)
 
 async def send_webhook_notification(message, whitelist_msg):
-    # ดึง User ID จากข้อความของบอท
     whitelisted_user_id = None
-    whitelisted_user_info = "ไม่พบข้อมูลผู้ใช้"
-    
+    whitelisted_user_info = "Unknown user information"
+
     try:
         import re
-        # ค้นหา <@userid> pattern ในข้อความของบอท
         user_mention_pattern = r'<@(\d+)>'
         match = re.search(user_mention_pattern, message.content)
-        
+
         if match:
             whitelisted_user_id = int(match.group(1))
             try:
-                # ดึงข้อมูลผู้ใช้จาก Discord
                 whitelisted_user = bot.get_user(whitelisted_user_id)
                 if whitelisted_user:
                     whitelisted_user_info = f"**{whitelisted_user.display_name}** (`{whitelisted_user.name}`) - ID: `{whitelisted_user_id}`"
@@ -243,6 +240,15 @@ async def send_webhook_notification(message, whitelist_msg):
                 print(f"Error fetching user info: {e}")
     except Exception as e:
         print(f"Error extracting user ID: {e}")
+
+    channel_info = f"**{message.channel.name}** (`#{message.channel.name}`) - ID: `{message.channel.id}`"
+    
+    if whitelist_msg:
+        command_type = "Slash Command" if (whitelist_msg.type == discord.MessageType.chat_input_command or 
+                                         whitelist_msg.interaction is not None) else "Text Command"
+        provider_info = f"**{whitelist_msg.author.display_name}** (`{whitelist_msg.author.name}`) - {command_type}: `{whitelist_msg.content}`"
+    else:
+        provider_info = "**Not Found**: Unable to detect /whitelist command"
 
     embed = {
         "title": "📌 Detect whitelisting",
@@ -258,7 +264,11 @@ async def send_webhook_notification(message, whitelist_msg):
             },
             {
                 "name": "👤 Whitelist provider",
-                "value": f"**{whitelist_msg.author if whitelist_msg else 'Not Found'}**: {whitelist_msg.content if whitelist_msg else 'Not Found /whitelist Command'}"
+                "value": provider_info
+            },
+            {
+                "name": "🏠 Channel used",
+                "value": channel_info
             }
         ]
     }
@@ -409,56 +419,66 @@ async def on_message(message):
                 await bot.process_commands(message)
                 return
 
-            # ตรวจจับคำสั่ง /whitelist จากผู้ใช้โดยตรง (รองรับหลายรูปแบบ)
             content_lower = message.content.lower()
-            whitelist_patterns = ['/whitelist', 'whitelist', '/w ', '/wl ']
+            whitelist_patterns = ['/whitelist', '/w ', '/wl ', 'whitelist @', '/white']
             
-            if any(pattern in content_lower for pattern in whitelist_patterns) and not message.author.bot:
+            is_slash_command = (message.type == discord.MessageType.chat_input_command or 
+                              message.interaction is not None or
+                              (message.content.startswith('/whitelist') and len(message.content.split()) > 1))
+            
+            is_text_pattern = any(pattern in content_lower for pattern in whitelist_patterns)
+
+            if (is_slash_command or is_text_pattern) and not message.author.bot:
                 try:
-                    # เก็บข้อมูลคำสั่ง whitelist เพื่อรอ response จากบอท
                     bot.whitelist_commands = getattr(bot, 'whitelist_commands', {})
                     bot.whitelist_commands[message.channel.id] = {
                         'user_message': message,
-                        'timestamp': datetime.datetime.now()
+                        'timestamp': datetime.datetime.now(),
+                        'command_type': 'slash_command' if is_slash_command else 'text_command'
                     }
-                    print(f"Detected whitelist command from user: {message.author} - Content: {message.content}")
+                    command_type = "slash command" if is_slash_command else "text command"
+                    print(f"✅ Detected whitelist {command_type} from user: {message.author} - Content: {message.content}")
                 except Exception as e:
-                    print(f"Error storing whitelist command: {e}")
+                    print(f"❌ Error storing whitelist command: {e}")
 
-            # ตรวจจับ response จากบอทเป้าหมาย (รองรับหลายรูปแบบ response)
-            response_patterns = ['whitelisted', 'whitelist', 'added to whitelist', 'successfully whitelisted']
+            response_patterns = ['whitelisted', 'whitelist', 'added to whitelist', 'successfully whitelisted', 'you have been whitelisted']
             if message.author.id == TARGET_BOT_ID and any(pattern in message.content.lower() for pattern in response_patterns):
                 try:
-                    # ค้นหาคำสั่ง /whitelist ที่เก็บไว้ล่าสุด
                     whitelist_commands = getattr(bot, 'whitelist_commands', {})
                     whitelist_msg = None
-                    
+
                     if message.channel.id in whitelist_commands:
                         stored_data = whitelist_commands[message.channel.id]
-                        # ตรวจสอบว่าเวลาไม่เกิน 2 นาที
                         time_diff = datetime.datetime.now() - stored_data['timestamp']
-                        if time_diff.total_seconds() <= 120:
+                        if time_diff.total_seconds() <= 300:  
                             whitelist_msg = stored_data['user_message']
-                            print(f"Found stored whitelist command: {whitelist_msg.content}")
-                        # ลบข้อมูลที่เก็บไว้
+                            print(f"✅ Found stored whitelist command: {whitelist_msg.content}")
                         del whitelist_commands[message.channel.id]
-                    
-                    # หากไม่พบ ให้ค้นหาในประวัติข้อความ (ขยายการค้นหา)
+
                     if not whitelist_msg:
-                        print("Searching in message history for whitelist command...")
-                        async for msg in message.channel.history(limit=25):
+                        print("🔍 Searching in message history for whitelist command...")
+                        async for msg in message.channel.history(limit=50):  
                             msg_content_lower = msg.content.lower()
-                            # ค้นหาหลายรูปแบบของคำสั่ง whitelist
-                            if (any(pattern in msg_content_lower for pattern in whitelist_patterns) and 
+                            
+                            is_slash_cmd = (msg.type == discord.MessageType.chat_input_command or 
+                                          msg.interaction is not None or
+                                          (msg.content.startswith('/whitelist') and len(msg.content.split()) > 1))
+                            
+                            whitelist_indicators = ['/whitelist', '/w ', '/wl ', 'whitelist @', '/white']
+                            is_text_cmd = any(indicator in msg_content_lower for indicator in whitelist_indicators)
+                            
+                            if ((is_slash_cmd or is_text_cmd) and 
                                 not msg.author.bot and 
-                                (datetime.datetime.now(datetime.timezone.utc) - msg.created_at).total_seconds() <= 600):
+                                (datetime.datetime.now(datetime.timezone.utc) - msg.created_at).total_seconds() <= 900):  # 15 minutes
                                 whitelist_msg = msg
-                                print(f"Found whitelist command in history: {msg.content}")
+                                cmd_type = "slash command" if is_slash_cmd else "text command"
+                                print(f"✅ Found whitelist {cmd_type} in history: {msg.content}")
                                 break
 
+                    print(f"📤 Sending webhook notification - Whitelist msg found: {whitelist_msg is not None}")
                     await send_webhook_notification(message, whitelist_msg)
                 except Exception as e:
-                    print(f"Error processing webhook notification: {e}")
+                    print(f"❌ Error processing webhook notification: {e}")
 
             await bot.process_commands(message)
 
