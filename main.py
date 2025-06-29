@@ -267,7 +267,7 @@ async def send_webhook_notification(message, whitelist_msg):
                 "value": provider_info
             },
             {
-                "name": "🏠 Channel used",
+                "name": "💬 Channel",
                 "value": channel_info
             }
         ]
