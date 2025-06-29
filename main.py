@@ -28,13 +28,14 @@ KEYWORD_AUTO_REPLIES = {
     "get": "If you mean the script, go to https://discord.com/channels/1328392700294070313/1374422401147998319.",
     "free": "If you mean the script, then there is definitely no free one.",
     "drop": "Coughing garbage",
+    "borrow": "Coughing garbage",
 }
 
 WHITELIST_USER_IDS = []
 
 BANNER_URL = 'https://media.discordapp.net/attachments/1378599490902298654/1380901765372973156/Banner.png?ex=6845907c&is=68443efc&hm=865a9ce85dee2225552441fa2d48298745c60c8da1447716b5ab57e5cb31eab8&=&format=webp&quality=lossless&width=1536&height=864'
 
-BAD_WORDS = ['fuck', 'worst', 'bad', 'suck', 'shit', 'source', 'drop', 'free', 'leak']
+BAD_WORDS = ['fuck','worst', 'bad','suck','shit','free','leak']
 
 AUTO_RESPONSES = {
         'free': "Sorry, there is no free script. Please go to https://xecrethub.com/purchase.",
