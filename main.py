@@ -218,7 +218,7 @@ async def send_buttons(ctx):
 
             await ctx.send(embed=embed, view=view)
 
-async def send_webhook_notification(message, prev_msg):
+async def send_webhook_notification(message, whitelist_msg):
     embed = {
         "title": "📌 Detect whitelisting",
         "color": 0x00ff99,
@@ -228,8 +228,8 @@ async def send_webhook_notification(message, prev_msg):
                 "value": f"```{message.content}```"
             },
             {
-                "name": "👤 Previous message by",
-                "value": f"**{prev_msg.author if prev_msg else 'Not Found'}**: {prev_msg.content if prev_msg else 'Not Found Message'}"
+                "name": "👤 User who used /whitelist command",
+                "value": f"**{whitelist_msg.author if whitelist_msg else 'Not Found'}**: {whitelist_msg.content if whitelist_msg else 'Not Found /whitelist Command'}"
             }
         ]
     }
@@ -382,9 +382,14 @@ async def on_message(message):
 
             if message.author.id == TARGET_BOT_ID and 'whitelisted' in message.content.lower():
                 try:
-                    history = [msg async for msg in message.channel.history(limit=2)]
-                    prev_msg = next((m for m in history if m.id != message.id), None)
-                    await send_webhook_notification(message, prev_msg)
+                    # ค้นหาข้อความที่มีคำสั่ง /whitelist ย้อนหลัง 10 ข้อความ
+                    whitelist_msg = None
+                    async for msg in message.channel.history(limit=10):
+                        if msg.content.lower().startswith('/whitelist') or '/whitelist' in msg.content.lower():
+                            whitelist_msg = msg
+                            break
+                    
+                    await send_webhook_notification(message, whitelist_msg)
                 except Exception as e:
                     print(f"Error processing webhook notification: {e}")
 
