@@ -239,9 +239,17 @@ async def send_webhook_notification(message, prev_msg):
     }
 
     try:
-        response = requests.post(os.getenv('KEY_WEBHOOK'), json=payload)
-        response.raise_for_status()  
+        webhook_url = os.getenv('KEY_WEBHOOK')
+        if webhook_url:
+            response = requests.post(webhook_url, json=payload)
+            response.raise_for_status()
+            print("Webhook notification sent successfully")
+        else:
+            print("No webhook URL configured")
     except requests.exceptions.RequestException as e:
+        print(f"Failed to send webhook notification: {e}")
+    except Exception as e:
+        print(f"Error in webhook notification: {e}")
 
 @bot.event
 async def on_message(message):
@@ -282,7 +290,7 @@ async def on_message(message):
                     break 
 
             if any(user.id in PROTECTED_USER_IDS for user in message.mentions):
-                
+
                 user_has_allowed_role = False
                 if hasattr(message.author, 'roles'):
                     for role in message.author.roles:
@@ -371,7 +379,7 @@ async def on_message(message):
 
                 await bot.process_commands(message)
                 return
-            
+
             if message.author.id == TARGET_BOT_ID and 'whitelisted' in message.content.lower():
                 try:
                     history = [msg async for msg in message.channel.history(limit=2)]
