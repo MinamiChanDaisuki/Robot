@@ -253,11 +253,11 @@ async def send_webhook_notification(message, whitelist_msg):
                 "value": f"```{message.content}```"
             },
             {
-                "name": "🎯 ผู้ได้รับ whitelist",
+                "name": "🎯 Whitelist recipients",
                 "value": whitelisted_user_info
             },
             {
-                "name": "👤 User who used /whitelist command",
+                "name": "👤 Whitelist provider",
                 "value": f"**{whitelist_msg.author if whitelist_msg else 'Not Found'}**: {whitelist_msg.content if whitelist_msg else 'Not Found /whitelist Command'}"
             }
         ]
