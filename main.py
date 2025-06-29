@@ -219,6 +219,31 @@ async def send_buttons(ctx):
             await ctx.send(embed=embed, view=view)
 
 async def send_webhook_notification(message, whitelist_msg):
+    # ดึง User ID จากข้อความของบอท
+    whitelisted_user_id = None
+    whitelisted_user_info = "ไม่พบข้อมูลผู้ใช้"
+    
+    try:
+        import re
+        # ค้นหา <@userid> pattern ในข้อความของบอท
+        user_mention_pattern = r'<@(\d+)>'
+        match = re.search(user_mention_pattern, message.content)
+        
+        if match:
+            whitelisted_user_id = int(match.group(1))
+            try:
+                # ดึงข้อมูลผู้ใช้จาก Discord
+                whitelisted_user = bot.get_user(whitelisted_user_id)
+                if whitelisted_user:
+                    whitelisted_user_info = f"**{whitelisted_user.display_name}** (`{whitelisted_user.name}`) - ID: `{whitelisted_user_id}`"
+                else:
+                    whitelisted_user_info = f"**Unknown User** - ID: `{whitelisted_user_id}`"
+            except Exception as e:
+                whitelisted_user_info = f"**Error fetching user** - ID: `{whitelisted_user_id}`"
+                print(f"Error fetching user info: {e}")
+    except Exception as e:
+        print(f"Error extracting user ID: {e}")
+
     embed = {
         "title": "📌 Detect whitelisting",
         "color": 0x00ff99,
@@ -226,6 +251,10 @@ async def send_webhook_notification(message, whitelist_msg):
             {
                 "name": "✅ Bot message reply",
                 "value": f"```{message.content}```"
+            },
+            {
+                "name": "🎯 ผู้ได้รับ whitelist",
+                "value": whitelisted_user_info
             },
             {
                 "name": "👤 User who used /whitelist command",
@@ -243,7 +272,7 @@ async def send_webhook_notification(message, whitelist_msg):
         if webhook_url:
             response = requests.post(webhook_url, json=payload)
             response.raise_for_status()
-            print("Webhook notification sent successfully")
+            print(f"Webhook notification sent successfully - Whitelisted user: {whitelisted_user_info}")
         else:
             print("No webhook URL configured")
     except requests.exceptions.RequestException as e:
@@ -380,8 +409,11 @@ async def on_message(message):
                 await bot.process_commands(message)
                 return
 
-            # ตรวจจับคำสั่ง /whitelist จากผู้ใช้โดยตรง
-            if '/whitelist' in message.content.lower() and not message.author.bot:
+            # ตรวจจับคำสั่ง /whitelist จากผู้ใช้โดยตรง (รองรับหลายรูปแบบ)
+            content_lower = message.content.lower()
+            whitelist_patterns = ['/whitelist', 'whitelist', '/w ', '/wl ']
+            
+            if any(pattern in content_lower for pattern in whitelist_patterns) and not message.author.bot:
                 try:
                     # เก็บข้อมูลคำสั่ง whitelist เพื่อรอ response จากบอท
                     bot.whitelist_commands = getattr(bot, 'whitelist_commands', {})
@@ -389,12 +421,13 @@ async def on_message(message):
                         'user_message': message,
                         'timestamp': datetime.datetime.now()
                     }
-                    print(f"Detected /whitelist command from user: {message.author}")
+                    print(f"Detected whitelist command from user: {message.author} - Content: {message.content}")
                 except Exception as e:
                     print(f"Error storing whitelist command: {e}")
 
-            # ตรวจจับ response จากบอทเป้าหมาย
-            if message.author.id == TARGET_BOT_ID and 'whitelisted' in message.content.lower():
+            # ตรวจจับ response จากบอทเป้าหมาย (รองรับหลายรูปแบบ response)
+            response_patterns = ['whitelisted', 'whitelist', 'added to whitelist', 'successfully whitelisted']
+            if message.author.id == TARGET_BOT_ID and any(pattern in message.content.lower() for pattern in response_patterns):
                 try:
                     # ค้นหาคำสั่ง /whitelist ที่เก็บไว้ล่าสุด
                     whitelist_commands = getattr(bot, 'whitelist_commands', {})
@@ -402,20 +435,25 @@ async def on_message(message):
                     
                     if message.channel.id in whitelist_commands:
                         stored_data = whitelist_commands[message.channel.id]
-                        # ตรวจสอบว่าเวลาไม่เกิน 1 นาที
+                        # ตรวจสอบว่าเวลาไม่เกิน 2 นาที
                         time_diff = datetime.datetime.now() - stored_data['timestamp']
-                        if time_diff.total_seconds() <= 60:
+                        if time_diff.total_seconds() <= 120:
                             whitelist_msg = stored_data['user_message']
+                            print(f"Found stored whitelist command: {whitelist_msg.content}")
                         # ลบข้อมูลที่เก็บไว้
                         del whitelist_commands[message.channel.id]
                     
-                    # หากไม่พบ ให้ค้นหาในประวัติข้อความ
+                    # หากไม่พบ ให้ค้นหาในประวัติข้อความ (ขยายการค้นหา)
                     if not whitelist_msg:
-                        async for msg in message.channel.history(limit=15):
-                            if ('/whitelist' in msg.content.lower() and 
+                        print("Searching in message history for whitelist command...")
+                        async for msg in message.channel.history(limit=25):
+                            msg_content_lower = msg.content.lower()
+                            # ค้นหาหลายรูปแบบของคำสั่ง whitelist
+                            if (any(pattern in msg_content_lower for pattern in whitelist_patterns) and 
                                 not msg.author.bot and 
-                                (datetime.datetime.now(datetime.timezone.utc) - msg.created_at).total_seconds() <= 300):
+                                (datetime.datetime.now(datetime.timezone.utc) - msg.created_at).total_seconds() <= 600):
                                 whitelist_msg = msg
+                                print(f"Found whitelist command in history: {msg.content}")
                                 break
 
                     await send_webhook_notification(message, whitelist_msg)
