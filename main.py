@@ -380,15 +380,44 @@ async def on_message(message):
                 await bot.process_commands(message)
                 return
 
+            # ตรวจจับคำสั่ง /whitelist จากผู้ใช้โดยตรง
+            if '/whitelist' in message.content.lower() and not message.author.bot:
+                try:
+                    # เก็บข้อมูลคำสั่ง whitelist เพื่อรอ response จากบอท
+                    bot.whitelist_commands = getattr(bot, 'whitelist_commands', {})
+                    bot.whitelist_commands[message.channel.id] = {
+                        'user_message': message,
+                        'timestamp': datetime.datetime.now()
+                    }
+                    print(f"Detected /whitelist command from user: {message.author}")
+                except Exception as e:
+                    print(f"Error storing whitelist command: {e}")
+
+            # ตรวจจับ response จากบอทเป้าหมาย
             if message.author.id == TARGET_BOT_ID and 'whitelisted' in message.content.lower():
                 try:
-                    # ค้นหาข้อความที่มีคำสั่ง /whitelist ย้อนหลัง 10 ข้อความ
+                    # ค้นหาคำสั่ง /whitelist ที่เก็บไว้ล่าสุด
+                    whitelist_commands = getattr(bot, 'whitelist_commands', {})
                     whitelist_msg = None
-                    async for msg in message.channel.history(limit=10):
-                        if msg.content.lower().startswith('/whitelist') or '/whitelist' in msg.content.lower():
-                            whitelist_msg = msg
-                            break
                     
+                    if message.channel.id in whitelist_commands:
+                        stored_data = whitelist_commands[message.channel.id]
+                        # ตรวจสอบว่าเวลาไม่เกิน 1 นาที
+                        time_diff = datetime.datetime.now() - stored_data['timestamp']
+                        if time_diff.total_seconds() <= 60:
+                            whitelist_msg = stored_data['user_message']
+                        # ลบข้อมูลที่เก็บไว้
+                        del whitelist_commands[message.channel.id]
+                    
+                    # หากไม่พบ ให้ค้นหาในประวัติข้อความ
+                    if not whitelist_msg:
+                        async for msg in message.channel.history(limit=15):
+                            if ('/whitelist' in msg.content.lower() and 
+                                not msg.author.bot and 
+                                (datetime.datetime.now(datetime.timezone.utc) - msg.created_at).total_seconds() <= 300):
+                                whitelist_msg = msg
+                                break
+
                     await send_webhook_notification(message, whitelist_msg)
                 except Exception as e:
                     print(f"Error processing webhook notification: {e}")
