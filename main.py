@@ -17,7 +17,7 @@ intents.members = True
 bot = commands.Bot(command_prefix='-', intents=intents, help_command=None)
 
 TARGET_BOT_ID = 1296471355994144891
-WEBHOOK_URL = 'https://discord.com/api/webhooks/1388141396145344606/i7-JI-J6lhNFtEzTJQeaQCOJcSSd8YaLUW57C9SPe4u67V_91ilPvxq7DVb0d4UyqeQA'
+WEBHOOK_URL = 'https://discord.com/api/webhooks/1388693174242770994/u1mkGh_qwEKqLUkrqVkzk5cTLkRGVpYd52nGGe-mYriL4X84vZPtwc0_gkXLrj6_PSAt'
 
 LATEST_VIDEO_FILE = "latest_video_id.txt"
 PROTECTED_USER_IDS = [1300017174886350899, 914141419688591361, 905399402724728833]
