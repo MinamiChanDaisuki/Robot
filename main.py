@@ -1,3 +1,4 @@
+
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -35,7 +36,7 @@ WHITELIST_USER_IDS = []
 
 BANNER_URL = 'https://media.discordapp.net/attachments/1378599490902298654/1380901765372973156/Banner.png?ex=6845907c&is=68443efc&hm=865a9ce85dee2225552441fa2d48298745c60c8da1447716b5ab57e5cb31eab8&=&format=webp&quality=lossless&width=1536&height=864'
 
-BAD_WORDS = ['fuck','worst', 'bad','suck','shit','free','leak']
+BAD_WORDS = ['fuck','worst','bad','suck','shit','borrow','drop']
 
 AUTO_RESPONSES = {
         'free': "Sorry, there is no free script. Please go to https://xecrethub.com/purchase.",
@@ -83,7 +84,6 @@ AUTO_RESPONSES = {
 
 @bot.event
 async def on_ready():
-        print(f"Bot is online and ready! Logged in as {bot.user}")
         await bot.wait_until_ready()
         await bot.change_presence(
             status=discord.Status.dnd,
@@ -92,13 +92,11 @@ async def on_ready():
         bot.loop.create_task(youtube_feed_check_loop())
 
         channel = bot.get_channel(1381039725791674490)
-        print(f"Channel fetched: {channel}")  
         try:
             guild = discord.Object(id=1328392700294070313)
             synced = await bot.tree.sync(guild=guild)
-            print(f"Synced {len(synced)} slash commands.")
         except Exception as e:
-            print(f"Failed to sync commands: {e}")
+            pass
 
         try:
             if channel:
@@ -109,7 +107,6 @@ async def on_ready():
                         embed = msg.embeds[0]
                         if embed.title == "How to use the question?":
                             already_sent = True
-                            print("How-to-use message already exists. Skipping send.")
                             break
 
                 if not already_sent:
@@ -122,10 +119,9 @@ async def on_ready():
                     embed.set_footer(text=f"https://xecrethub.com | Sent at {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
                     embed.set_image(url=BANNER_URL)
                     await channel.send(embed=embed)
-                    print("Sent how-to-use message to #1381039725791674490")
 
         except Exception as e:
-            print(f"Failed to send how-to-use message: {e}")
+            pass
 
 def load_latest_video_id():
         if os.path.exists(LATEST_VIDEO_FILE):
@@ -148,7 +144,6 @@ async def youtube_feed_check_loop():
         while not bot.is_closed():
             try:
                 feed = feedparser.parse(feed_url)
-                print(f"[YouTube Feed Check] Found {len(feed.entries)} entries.")
 
                 if feed.entries:
                     latest_entry = feed.entries[0]
@@ -176,23 +171,15 @@ async def youtube_feed_check_loop():
                                 async for old_message in channel.history(limit=50):
                                     if video_url in old_message.content:
                                         video_already_sent = True
-                                        print(f"[YouTube Feed Check] Video already sent in channel: {video_url}")
                                         break
                             except Exception as e:
-                                print(f"[YouTube Feed Check] Error checking message history: {e}")
+                                pass
 
                             if not video_already_sent:
                                 await channel.send(f"<@&1383766143939903528>\n📢 **New Video Posted on XecretHub!**\n{video_url}")
-                                print(f"[YouTube Feed Check] Posted new video: {video_title} ({video_url})")
-                            else:
-                                print(f"[YouTube Feed Check] Skipped duplicate video: {video_url}")
-                        else:
-                            print("❌ Could not find the target Discord channel.")
-                    else:
-                        print(f"[YouTube Feed Check] Latest video already posted: {video_id}")
 
             except Exception as e:
-                print(f"Error checking YouTube feed: {e}")
+                pass
 
             await asyncio.sleep(300)
 
@@ -238,18 +225,25 @@ async def send_webhook_notification(message, whitelist_msg):
                     whitelisted_user_info = f"**Unknown User** - ID: `{whitelisted_user_id}`"
             except Exception as e:
                 whitelisted_user_info = f"**Error fetching user** - ID: `{whitelisted_user_id}`"
-                print(f"Error fetching user info: {e}")
     except Exception as e:
-        print(f"Error extracting user ID: {e}")
+        pass
 
     channel_info = f"**{message.channel.name}** (`#{message.channel.name}`) - ID: `{message.channel.id}`"
+
+    guild = message.guild
+    role_members = []
+    target_role_id = 1372539215090290778
     
-    if whitelist_msg:
-        command_type = "Slash Command" if (whitelist_msg.type == discord.MessageType.chat_input_command or 
-                                         whitelist_msg.interaction is not None) else "Text Command"
-        provider_info = f"**{whitelist_msg.author.display_name}** (`{whitelist_msg.author.name}`) - {command_type}: `{whitelist_msg.content}`"
+    if guild:
+        target_role = guild.get_role(target_role_id)
+        if target_role:
+            for member in target_role.members:
+                role_members.append(f"**{member.display_name}** (`{member.name}`) - ID: `{member.id}`")
+    
+    if not role_members:
+        role_members_info = "No members found with the specified role"
     else:
-        provider_info = "**Not Found**: Unable to detect /whitelist command"
+        role_members_info = "\n".join(role_members)
 
     embed = {
         "title": "📌 Detect whitelisting",
@@ -264,11 +258,11 @@ async def send_webhook_notification(message, whitelist_msg):
                 "value": whitelisted_user_info
             },
             {
-                "name": "👤 Whitelist provider",
-                "value": provider_info
+                "name": "👤 Role members (ID: 1372539215090290778)",
+                "value": role_members_info
             },
             {
-                "name": "💬 Channel",
+                "name": "🏠 Channel used",
                 "value": channel_info
             }
         ]
@@ -283,13 +277,10 @@ async def send_webhook_notification(message, whitelist_msg):
         if webhook_url:
             response = requests.post(webhook_url, json=payload)
             response.raise_for_status()
-            print(f"Webhook notification sent successfully - Whitelisted user: {whitelisted_user_info}")
-        else:
-            print("No webhook URL configured")
     except requests.exceptions.RequestException as e:
-        print(f"Failed to send webhook notification: {e}")
+        pass
     except Exception as e:
-        print(f"Error in webhook notification: {e}")
+        pass
 
 @bot.event
 async def on_message(message):
@@ -314,19 +305,18 @@ async def on_message(message):
                 if keyword in lower_msg:
                     try:
                         reply_msg = await message.reply(reply_text, mention_author=False)
-                        print(f"[Auto Reply] Triggered keyword '{keyword}'")
 
                         async def delete_reply_later(msg):
                             await asyncio.sleep(5)
                             try:
                                 await msg.delete()
                             except Exception as e:
-                                print(f"[Auto Reply - {keyword}] Failed to delete message: {e}")
+                                pass
 
                         bot.loop.create_task(delete_reply_later(reply_msg))
 
                     except Exception as e:
-                        print(f"[Auto Reply - {keyword}] Error: {e}")
+                        pass
                     break 
 
             if any(user.id in PROTECTED_USER_IDS for user in message.mentions):
@@ -384,9 +374,8 @@ async def on_message(message):
                 if content.startswith('/question'):
                     try:
                         await message.delete()
-                        print(f"Deleted invalid /question message: {content}")
                     except Exception as e:
-                        print(f"Failed to delete invalid /question message: {e}")
+                        pass
                     return
 
                 if content.startswith('/'):
@@ -394,9 +383,8 @@ async def on_message(message):
 
                 try:
                     await message.delete()
-                    print(f"Deleted message: {content}")
                 except Exception as e:
-                    print(f"Failed to delete message: {e}")
+                    pass
                 return
 
             if message.content.startswith('-') and message.channel.id not in ALLOWED_CHANNEL_IDS:
@@ -420,66 +408,9 @@ async def on_message(message):
                 await bot.process_commands(message)
                 return
 
-            content_lower = message.content.lower()
-            whitelist_patterns = ['/whitelist', '/w ', '/wl ', 'whitelist @', '/white']
-            
-            is_slash_command = (message.type == discord.MessageType.chat_input_command or 
-                              message.interaction is not None or
-                              (message.content.startswith('/whitelist') and len(message.content.split()) > 1))
-            
-            is_text_pattern = any(pattern in content_lower for pattern in whitelist_patterns)
-
-            if (is_slash_command or is_text_pattern) and not message.author.bot:
-                try:
-                    bot.whitelist_commands = getattr(bot, 'whitelist_commands', {})
-                    bot.whitelist_commands[message.channel.id] = {
-                        'user_message': message,
-                        'timestamp': datetime.datetime.now(),
-                        'command_type': 'slash_command' if is_slash_command else 'text_command'
-                    }
-                    command_type = "slash command" if is_slash_command else "text command"
-                    print(f"✅ Detected whitelist {command_type} from user: {message.author} - Content: {message.content}")
-                except Exception as e:
-                    print(f"❌ Error storing whitelist command: {e}")
-
             response_patterns = ['whitelisted', 'whitelist', 'added to whitelist', 'successfully whitelisted', 'you have been whitelisted']
             if message.author.id == TARGET_BOT_ID and any(pattern in message.content.lower() for pattern in response_patterns):
-                try:
-                    whitelist_commands = getattr(bot, 'whitelist_commands', {})
-                    whitelist_msg = None
-
-                    if message.channel.id in whitelist_commands:
-                        stored_data = whitelist_commands[message.channel.id]
-                        time_diff = datetime.datetime.now() - stored_data['timestamp']
-                        if time_diff.total_seconds() <= 300:  
-                            whitelist_msg = stored_data['user_message']
-                            print(f"✅ Found stored whitelist command: {whitelist_msg.content}")
-                        del whitelist_commands[message.channel.id]
-
-                    if not whitelist_msg:
-                        print("🔍 Searching in message history for whitelist command...")
-                        async for msg in message.channel.history(limit=50):  
-                            msg_content_lower = msg.content.lower()
-                            
-                            is_slash_cmd = (msg.type == discord.MessageType.chat_input_command or 
-                                          msg.interaction is not None or
-                                          (msg.content.startswith('/whitelist') and len(msg.content.split()) > 1))
-                            
-                            whitelist_indicators = ['/whitelist', '/w ', '/wl ', 'whitelist @', '/white']
-                            is_text_cmd = any(indicator in msg_content_lower for indicator in whitelist_indicators)
-                            
-                            if ((is_slash_cmd or is_text_cmd) and 
-                                not msg.author.bot and 
-                                (datetime.datetime.now(datetime.timezone.utc) - msg.created_at).total_seconds() <= 900):  # 15 minutes
-                                whitelist_msg = msg
-                                cmd_type = "slash command" if is_slash_cmd else "text command"
-                                print(f"✅ Found whitelist {cmd_type} in history: {msg.content}")
-                                break
-
-                    print(f"📤 Sending webhook notification - Whitelist msg found: {whitelist_msg is not None}")
-                    await send_webhook_notification(message, whitelist_msg)
-                except Exception as e:
-                    print(f"❌ Error processing webhook notification: {e}")
+                await send_webhook_notification(message, None)
 
             await bot.process_commands(message)
 
@@ -615,7 +546,7 @@ async def question(interaction: discord.Interaction, query: str):
                         await asyncio.sleep(0.5)
                         await msg.delete()
                     except Exception as e:
-                        print(f"Failed to delete message: {e}")
+                        pass
                     return
 
             await interaction.response.send_message("No matching FAQ found.")
@@ -625,7 +556,7 @@ async def question(interaction: discord.Interaction, query: str):
                 await asyncio.sleep(0.5)
                 await msg.delete()
             except Exception as e:
-                print(f"Failed to delete message: {e}")
+                pass
 
 
 server_on()
