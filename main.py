@@ -233,15 +233,19 @@ async def send_webhook_notification(message, whitelist_msg):
     guild = message.guild
     role_members = []
     target_role_id = 1372539215090290778
-    
+
     if guild:
         target_role = guild.get_role(target_role_id)
         if target_role:
-            for member in target_role.members:
-                role_members.append(f"**{member.display_name}** (`{member.name}`) - ID: `{member.id}`")
-    
+            try:
+                async for msg in message.channel.history(limit=50):
+                    if msg.author in target_role.members and msg.author not in [m.split('ID: `')[1].split('`')[0] for m in role_members if 'ID: `' in m]:
+                        role_members.append(f"**{msg.author.display_name}** (`{msg.author.name}`) - ID: `{msg.author.id}`")
+            except Exception as e:
+                pass
+
     if not role_members:
-        role_members_info = "No members found with the specified role"
+        role_members_info = "No members with the role have sent messages in this channel recently"
     else:
         role_members_info = "\n".join(role_members)
 
@@ -258,7 +262,7 @@ async def send_webhook_notification(message, whitelist_msg):
                 "value": whitelisted_user_info
             },
             {
-                "name": "👤 Role members (ID: 1372539215090290778)",
+                "name": "👤 Key Assist",
                 "value": role_members_info
             },
             {
