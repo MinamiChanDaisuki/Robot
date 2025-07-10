@@ -461,25 +461,48 @@ async def terms(ctx):
 
 @bot.command()
 async def showcase(ctx):
-            video_title = "Test Video - XecretHub Showcase"
-            video_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-            video_id = "dQw4w9WgXcQ"
-            thumbnail_url = f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg"
-            video_description = "This is a test showcase of the YouTube notification system."
-            content_value = "Testing the video notification format with all required fields."
+            try:
+                feed_url = 'https://www.youtube.com/feeds/videos.xml?channel_id=UC5abJGhz74y-cw88wFqX0Jw'
+                feed = feedparser.parse(feed_url)
 
-            embed = discord.Embed(
-                title=video_title,
-                url=video_url,
-                description=video_description,
-                color=0xFFA500
-            )
-            embed.set_image(url=thumbnail_url)
-            embed.add_field(name="Content", value=content_value[:1024], inline=False)
-            embed.add_field(name="Video URL", value=video_url, inline=False)
-            embed.add_field(name="Thumbnail URL", value=thumbnail_url, inline=False)
+                if feed.entries:
+                    latest_entry = feed.entries[0]
+                    try:
+                        video_id = latest_entry.yt_videoid
+                    except AttributeError:
+                        if "youtube.com/watch?v=" in latest_entry.link:
+                            video_id = latest_entry.link.split("v=")[1].split("&")[0]
+                        elif "youtu.be/" in latest_entry.link:
+                            video_id = latest_entry.link.split("youtu.be/")[1].split("?")[0]
+                        else:
+                            video_id = None
 
-            await ctx.send(content="<@&1383766143939903528>", embed=embed)
+                    video_title = latest_entry.title
+                    video_url = f"https://www.youtube.com/watch?v={video_id}"
+                    thumbnail_url = f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg"
+                    video_description = getattr(latest_entry, 'summary', 'No description available')
+                    video_content = getattr(latest_entry, 'content', [{}])
+                    if video_content and len(video_content) > 0:
+                        content_value = video_content[0].get('value', 'No content available')
+                    else:
+                        content_value = 'No content available'
+
+                    embed = discord.Embed(
+                        title=video_title,
+                        url=video_url,
+                        description=video_description,
+                        color=0xFFA500
+                    )
+                    embed.set_image(url=thumbnail_url)
+                    embed.add_field(name="Content", value=content_value[:1024], inline=False)
+                    embed.add_field(name="Video URL", value=video_url, inline=False)
+                    embed.add_field(name="Thumbnail URL", value=thumbnail_url, inline=False)
+
+                    await ctx.send(content="<@&1383766143939903528>", embed=embed)
+                else:
+                    await ctx.send("No videos found in the YouTube feed.")
+            except Exception as e:
+                await ctx.send(f"Error fetching YouTube feed: {str(e)}")
 
 @bot.command()
 async def loginsignup(ctx):
