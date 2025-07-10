@@ -224,7 +224,7 @@ async def youtube_feed_check_loop():
             except Exception as e:
                 pass
 
-            await asyncio.sleep(300)
+            await asyncio.sleep(60)
 
 @bot.command()
 async def send_buttons(ctx):
