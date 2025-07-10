@@ -219,7 +219,6 @@ async def youtube_feed_check_loop():
                                     color=0xFFA500
                                 )
                                 embed.set_image(url=thumbnail_url)
-                                embed.add_field(name="Content", value=content_value[:1024], inline=False)
                                 embed.add_field(name="Video URL", value=video_url, inline=False)
                                 embed.add_field(name="Thumbnail URL", value=thumbnail_url, inline=False)
 
@@ -494,7 +493,6 @@ async def showcase(ctx):
                         color=0xFFA500
                     )
                     embed.set_image(url=thumbnail_url)
-                    embed.add_field(name="Content", value=content_value[:1024], inline=False)
                     embed.add_field(name="Video URL", value=video_url, inline=False)
                     embed.add_field(name="Thumbnail URL", value=thumbnail_url, inline=False)
 
