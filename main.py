@@ -1,4 +1,3 @@
-
 import discord
 from discord.ext import commands
 from discord import app_commands
@@ -368,7 +367,6 @@ async def on_message(message):
                     pass
                 return
 
-            # Allow basic commands in all channels
             basic_commands = ['.purchase', '.website', '.supported_games', '.supported_executors', '.terms']
             if message.content.startswith('.') and message.channel.id not in ALLOWED_CHANNEL_IDS:
                 command_name = message.content.split()[0].lower()
@@ -478,44 +476,55 @@ async def help(ctx):
 @commands.has_permissions(administrator=True)
 async def send(ctx, *, args: str):
             parts = args.split()
-
-            if len(parts) >= 2:
-                potential_channel = parts[-1]
+            if len(parts) >= 1:
+                potential_channel = parts[-1] if len(parts) >= 2 else None
                 
-                # Check if it's a Discord channel link
-                if potential_channel.startswith("https://discord.com/channels/"):
+                if potential_channel and potential_channel.startswith("https://discord.com/channels/"):
                     try:
-                        # Extract channel ID from Discord link
-                        # Format: https://discord.com/channels/server_id/channel_id
                         channel_id = potential_channel.split('/')[-1]
                         channel_id = int(channel_id)
                         target_channel = bot.get_channel(channel_id)
                         if target_channel:
                             message = ' '.join(parts[:-1])
                             await target_channel.send(message)
-                            await ctx.send(f"Message sent to {target_channel.mention}")
+                            confirmation = await ctx.send(f"Message sent to {target_channel.mention}")
+                            await asyncio.sleep(3)
+                            try:
+                                await confirmation.delete()
+                            except:
+                                pass
                         else:
                             await ctx.send("Channel not found from the provided link.")
                     except (ValueError, IndexError):
                         await ctx.send("Invalid Discord channel link format.")
-                
-                # Check if it's a direct channel ID (legacy support)
-                elif potential_channel.isdigit() and len(potential_channel) >= 15:
+                elif potential_channel and potential_channel.isdigit() and len(potential_channel) >= 15:
                     try:
                         channel_id = int(potential_channel)
                         target_channel = bot.get_channel(channel_id)
                         if target_channel:
                             message = ' '.join(parts[:-1])
                             await target_channel.send(message)
-                            await ctx.send(f"Message sent to {target_channel.mention}")
+                            confirmation = await ctx.send(f"Message sent to {target_channel.mention}")
+                            await asyncio.sleep(3)
+                            try:
+                                await confirmation.delete()
+                            except:
+                                pass
                         else:
                             await ctx.send("Channel not found.")
                     except ValueError:
                         await ctx.send("Invalid channel ID.")
                 else:
-                    await ctx.send("Please provide a valid Discord channel link or channel ID.")
+                    message = ' '.join(parts)
+                    await ctx.channel.send(message)
+                    confirmation = await ctx.send(f"Message sent to {ctx.channel.mention}")
+                    await asyncio.sleep(3)
+                    try:
+                        await confirmation.delete()
+                    except:
+                        pass
             else:
-                await ctx.send("Usage: `.send [message] [channel_link_or_id]`")
+                await ctx.send("Usage: `.send [message] [channel_link_or_id]` or `.send [message]` to send to current channel")
 
             try:
                 await ctx.message.delete()
