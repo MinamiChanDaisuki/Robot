@@ -181,7 +181,6 @@ def add_sent_video(channel_id, video_id, sent_videos):
             sent_videos[channel_id] = []
         if video_id not in sent_videos[channel_id]:
             sent_videos[channel_id].append(video_id)
-            # Keep only last 50 videos to prevent file from getting too large
             if len(sent_videos[channel_id]) > 50:
                 sent_videos[channel_id] = sent_videos[channel_id][-50:]
 
@@ -233,7 +232,6 @@ async def youtube_feed_check_loop():
 
                                 await channel.send(content="<@&1383766143939903528>", embed=embed)
                                 
-                                # Mark video as sent
                                 add_sent_video(channel_id, video_id, sent_videos)
                                 save_sent_videos(sent_videos)
 
