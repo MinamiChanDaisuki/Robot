@@ -200,7 +200,26 @@ async def youtube_feed_check_loop():
                                 pass
 
                             if not video_already_sent:
-                                await channel.send(f"<@&1383766143939903528>\n📢 **New Video Posted on XecretHub!**\n{video_url}")
+                                thumbnail_url = f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg"
+                                video_description = getattr(latest_entry, 'summary', 'No description available')
+                                video_content = getattr(latest_entry, 'content', [{}])
+                                if video_content and len(video_content) > 0:
+                                    content_value = video_content[0].get('value', 'No content available')
+                                else:
+                                    content_value = 'No content available'
+
+                                embed = discord.Embed(
+                                    title=video_title,
+                                    url=video_url,
+                                    description=video_description,
+                                    color=0xFF0000
+                                )
+                                embed.set_image(url=thumbnail_url)
+                                embed.add_field(name="Content", value=content_value[:1024], inline=False)
+                                embed.add_field(name="Video URL", value=video_url, inline=False)
+                                embed.add_field(name="Thumbnail URL", value=thumbnail_url, inline=False)
+
+                                await channel.send(content="<@&1383766143939903528>", embed=embed)
 
             except Exception as e:
                 pass
@@ -370,7 +389,7 @@ async def on_message(message):
             basic_commands = ['.purchase', '.website', '.supported_games', '.supported_executors', '.terms']
             if message.content.startswith('.') and message.channel.id not in ALLOWED_CHANNEL_IDS:
                 command_name = message.content.split()[0].lower()
-                
+
                 if command_name in basic_commands or message.content.startswith('.send'):
                     await bot.process_commands(message)
                     return
@@ -437,6 +456,26 @@ async def purchase(ctx):
             await ctx.send(embed=embed)
 
 @bot.command()
+async def terms(ctx):
+            embed = discord.Embed(
+                title="Terms",
+                description="[Terms](https://xecrethub.com/terms)",
+                color=0xFFFFFF
+            )
+            embed.set_image(url=BANNER_URL)
+            await ctx.send(embed=embed)
+
+@bot.command()
+async def showcase(ctx):
+            embed = discord.Embed(
+                title="Showcase",
+                description="Go to https://discord.com/channels/1328392700294070313/1328406450489393253.",
+                color=0xFFFFFF
+            )
+            embed.set_image(url=BANNER_URL)
+            await ctx.send(embed=embed)
+
+@bot.command()
 async def loginsignup(ctx):
             embed = discord.Embed(
                 title="Terms",
@@ -478,7 +517,7 @@ async def send(ctx, *, args: str):
             parts = args.split()
             if len(parts) >= 1:
                 potential_channel = parts[-1] if len(parts) >= 2 else None
-                
+
                 if potential_channel and potential_channel.startswith("https://discord.com/channels/"):
                     try:
                         channel_id = potential_channel.split('/')[-1]
