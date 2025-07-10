@@ -467,13 +467,25 @@ async def terms(ctx):
 
 @bot.command()
 async def showcase(ctx):
+            video_title = "Test Video - XecretHub Showcase"
+            video_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+            video_id = "dQw4w9WgXcQ"
+            thumbnail_url = f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg"
+            video_description = "This is a test showcase of the YouTube notification system."
+            content_value = "Testing the video notification format with all required fields."
+            
             embed = discord.Embed(
-                title="Showcase",
-                description="Go to https://discord.com/channels/1328392700294070313/1328406450489393253.",
-                color=0xFFFFFF
+                title=video_title,
+                url=video_url,
+                description=video_description,
+                color=0xFF0000
             )
-            embed.set_image(url=BANNER_URL)
-            await ctx.send(embed=embed)
+            embed.set_image(url=thumbnail_url)
+            embed.add_field(name="Content", value=content_value[:1024], inline=False)
+            embed.add_field(name="Video URL", value=video_url, inline=False)
+            embed.add_field(name="Thumbnail URL", value=thumbnail_url, inline=False)
+            
+            await ctx.send(content="<@&1383766143939903528>", embed=embed)
 
 @bot.command()
 async def loginsignup(ctx):
