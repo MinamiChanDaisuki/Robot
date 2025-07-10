@@ -23,7 +23,7 @@ LATEST_VIDEO_FILE = "latest_video_id.txt"
 
 ALLOWED_CHANNEL_IDS = [1380891908376760401, 1381039725791674490]
 
-BANNER_URL = 'https://media.discordapp.net/attachments/1378599490902298654/1380901765372973156/Banner.png?ex=6845907c&is=68443efc&hm=865a9ce85dee2225552441fa2d48298745c60c8da1447716b5ab57e5cb31eab8&=&format=webp&quality=lossless&width=1536&height=864'
+BANNER_URL = 'https://i.ibb.co/Wvbbk0bx/Xecret-banner-1.png'
 
 AUTO_RESPONSES = {
     'free': "Sorry, there is no free script. Please go to https://xecrethub.com/purchase.",
