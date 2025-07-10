@@ -15,71 +15,95 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-bot = commands.Bot(command_prefix='-', intents=intents, help_command=None)
+bot = commands.Bot(command_prefix='.', intents=intents, help_command=None)
 
 TARGET_BOT_ID = 1296471355994144891
 
 LATEST_VIDEO_FILE = "latest_video_id.txt"
-PROTECTED_USER_IDS = [1300017174886350899, 914141419688591361, 905399402724728833]
-ALLOWED_PING_ROLE_IDS = [1372913561411653682,1381035858458710128,1382595907505356864,1382367857639166034,1372539215090290778,1381271716281712752,1382360867756183592,1380500481042026566,1354409237572354090]
-TIMEOUT_DURATION = 5
+
 ALLOWED_CHANNEL_IDS = [1380891908376760401, 1381039725791674490]
-
-KEYWORD_AUTO_REPLIES = {
-    "get": "If you mean the script, go to https://discord.com/channels/1328392700294070313/1374422401147998319.",
-    "free": "If you mean the script, then there is definitely no free one.",
-    "drop": "Coughing garbage",
-    "borrow": "Coughing garbage",
-}
-
-WHITELIST_USER_IDS = []
 
 BANNER_URL = 'https://media.discordapp.net/attachments/1378599490902298654/1380901765372973156/Banner.png?ex=6845907c&is=68443efc&hm=865a9ce85dee2225552441fa2d48298745c60c8da1447716b5ab57e5cb31eab8&=&format=webp&quality=lossless&width=1536&height=864'
 
-BAD_WORDS = ['fuck','worst','bad','suck','shit','borrow','drop']
-
 AUTO_RESPONSES = {
-        'free': "Sorry, there is no free script. Please go to https://xecrethub.com/purchase.",
-        'free script': "Sorry, there is no free script. Please go to https://xecrethub.com/purchase.",
-        'free download': "Sorry, there is no free download. Please visit https://xecrethub.com/purchase.",
-        'free cheat': "Sorry, there is no free cheat. Please purchase at https://xecrethub.com/purchase.",
-        'how much': "View pricing at https://xecrethub.com/purchase.",
-        'get': "View pricing at https://xecrethub.com/purchase and get script in https://discord.com/channels/1328392700294070313/1374422401147998319.",
-        'price': "View pricing at https://xecrethub.com/purchase.",
-        'cost': "View pricing at https://xecrethub.com/purchase.",
-        'buy': "Please visit https://xecrethub.com/purchase to buy.",
-        'video': "Go to https://discord.com/channels/1328392700294070313/1328406450489393253.",
-        'vid': "Go to https://discord.com/channels/1328392700294070313/1328406450489393253.",
-        'show': "Go to https://discord.com/channels/1328392700294070313/1328406450489393253.",
-        'showcase': "Go to https://discord.com/channels/1328392700294070313/1328406450489393253.",
-        'example': "example Video Here: https://discord.com/channels/1328392700294070313/1328406450489393253.",
-        'purchase': "Please visit https://xecrethub.com/purchase to purchase.",
-        'payment': "You can purchase here: https://xecrethub.com/purchase.",
-        'supported games': "You can check supported games here: https://xecrethub.com/games.",
-        'games list': "You can check supported games here: https://xecrethub.com/games.",
-        'game support': "Supported games are listed here: https://xecrethub.com/games.",
-        'game': "Supported games are listed here: https://xecrethub.com/games.",
-        'supported executors': "You can check supported executors here: https://xecrethub.com/executors.",
-        'executors list': "You can check supported executors here: https://xecrethub.com/executors.",
-        'executor support': "Supported executors are listed here: https://xecrethub.com/executors.",
-        'executor': "Supported executors are listed here: https://xecrethub.com/executors.",
-        'term': "Here: https://xecrethub.com/terms.",
-        'help': "Go to https://discord.com/channels/1328392700294070313/1348578938024104006.",
-        'website': "Visit https://xecrethub.com.",
-        'site': "Visit https://xecrethub.com.",
-        'web': "Visit https://xecrethub.com.",
-        'official site': "Visit https://xecrethub.com.",
-        'official website': "Visit https://xecrethub.com.",
-        'support': "For support, please visit https://xecrethub.com.",
-        'discord': "Join our Discord here: https://discord.gg/xecrethub.",
-        'discord link': "Join our Discord here: https://discord.gg/xecrethub.",
-        'error': "If you encounter an error, please contact support via https://discord.com/channels/1328392700294070313/1348578938024104006.",
-        'not working': "If something is not working, please contact support via https://discord.com/channels/1328392700294070313/1348578938024104006.",
-        'how to use': "You can read how to use at https://xecrethub.com.",
-        'update': "Go to https://discord.com/channels/1328392700294070313/1335520199205585000.",
-        'version': "Go to https://discord.com/channels/1328392700294070313/1335520199205585000.",
-        'paid': "Please visit https://xecrethub.com/purchase to purchase.",
-        'refund': "We do not accept refunds.",
+    'free': "Sorry, there is no free script. Please go to https://xecrethub.com/purchase.",
+    'free script': "Sorry, there is no free script. Please go to https://xecrethub.com/purchase.",
+    'free download': "Sorry, there is no free download. Please visit https://xecrethub.com/purchase.",
+    'free cheat': "Sorry, there is no free cheat. Please purchase at https://xecrethub.com/purchase.",
+    'any free': "Sorry, there is no free version. Please visit https://xecrethub.com/purchase.",
+    'is it free': "No, it's not free. Visit https://xecrethub.com/purchase.",
+    'can i get it free': "No free access available. Purchase at https://xecrethub.com/purchase.",
+    'can i download free': "No free download available. Please visit https://xecrethub.com/purchase.",
+    'can i use free': "No free version available. Please visit https://xecrethub.com/purchase.",
+    'can i use it free': "No free version available. Please visit https://xecrethub.com/purchase.",
+    'can i use free script': "No free script available. Please visit https://xecrethub.com/purchase.",
+    'can i use free cheat': "No free cheat available. Please visit https://xecrethub.com/purchase.",
+    'how much': "View pricing at https://xecrethub.com/purchase.",
+    'get': "View pricing at https://xecrethub.com/purchase and get script in https://discord.com/channels/1328392700294070313/1374422401147998319.",
+    'price': "View pricing at https://xecrethub.com/purchase.",
+    'cost': "View pricing at https://xecrethub.com/purchase.",
+    'buy': "Please visit https://xecrethub.com/purchase to buy.",
+    'purchase': "Please visit https://xecrethub.com/purchase to purchase.",
+    'payment': "You can purchase here: https://xecrethub.com/purchase.",
+    'paid': "Please visit https://xecrethub.com/purchase to purchase.",
+    'where to buy': "You can buy it here: https://xecrethub.com/purchase.",
+    'how to buy': "Purchase guide available at https://xecrethub.com/purchase.",
+    'how to purchase': "Purchase guide available at https://xecrethub.com/purchase.",
+    'video': "Go to https://discord.com/channels/1328392700294070313/1328406450489393253.",
+    'vid': "Go to https://discord.com/channels/1328392700294070313/1328406450489393253.",
+    'show': "Go to https://discord.com/channels/1328392700294070313/1328406450489393253.",
+    'showcase': "Go to https://discord.com/channels/1328392700294070313/1328406450489393253.",
+    'example': "Example video here: https://discord.com/channels/1328392700294070313/1328406450489393253.",
+    'demo': "Demo available here: https://discord.com/channels/1328392700294070313/1328406450489393253.",
+    'how to use': "You can read how to use at https://xecrethub.com.",
+    'supported games': "You can check supported games here: https://xecrethub.com/games.",
+    'games list': "You can check supported games here: https://xecrethub.com/games.",
+    'game support': "Supported games are listed here: https://xecrethub.com/games.",
+    'game': "Supported games are listed here: https://xecrethub.com/games.",
+    'what games': "You can check supported games here: https://xecrethub.com/games.",
+    'which games': "You can check supported games here: https://xecrethub.com/games.",
+    'supported executors': "You can check supported executors here: https://xecrethub.com/executors.",
+    'executors list': "You can check supported executors here: https://xecrethub.com/executors.",
+    'executor support': "Supported executors are listed here: https://xecrethub.com/executors.",
+    'executor': "Supported executors are listed here: https://xecrethub.com/executors.",
+    'which executor': "Check supported executors: https://xecrethub.com/executors.",
+    'which executors': "Check supported executors: https://xecrethub.com/executors.",
+    'term': "Here: https://xecrethub.com/terms.",
+    'terms': "You can find our terms here: https://xecrethub.com/terms.",
+    'tos': "Terms of Service: https://xecrethub.com/terms.",
+    'help': "Go to https://discord.com/channels/1328392700294070313/1348578938024104006.",
+    'support': "For support, please visit https://xecrethub.com.",
+    'i need help': "Contact support here: https://discord.com/channels/1328392700294070313/1348578938024104006.",
+    'issue': "Report issue here: https://discord.com/channels/1328392700294070313/1348578938024104006.",
+    'contact support': "For support, please visit https://discord.com/channels/1328392700294070313/1348578938024104006.",
+    'website': "Visit https://xecrethub.com.",
+    'site': "Visit https://xecrethub.com.",
+    'web': "Visit https://xecrethub.com.",
+    'official site': "Visit https://xecrethub.com.",
+    'official website': "Visit https://xecrethub.com.",
+    'official': "Visit https://xecrethub.com.",
+    'xecret': "Visit https://xecrethub.com.",
+    'discord': "Join our Discord here: https://discord.gg/xecrethub.",
+    'dc': "Join our Discord here: https://discord.gg/xecrethub.",
+    'discord link': "Join our Discord here: https://discord.gg/xecrethub.",
+    'how to join discord': "Join our Discord here: https://discord.gg/xecrethub.",
+    'how to join': "Join our Discord here: https://discord.gg/xecrethub.",
+    'error': "If you encounter an error, please contact support via https://discord.com/channels/1328392700294070313/1348578938024104006.",
+    'not working': "If something is not working, please contact support via https://discord.com/channels/1328392700294070313/1348578938024104006.",
+    'crash': "If it crashes, please report the issue at https://discord.com/channels/1328392700294070313/1348578938024104006.",
+    'broken': "If something's broken, reach out via https://discord.com/channels/1328392700294070313/1348578938024104006.",
+    'bug': "If something's broken, reach out via https://discord.com/channels/1328392700294070313/1348578938024104006.",
+    'issue': "If you have an issue, please report it at https://discord.com/channels/1328392700294070313/1348578938024104006.",
+    'how to use': "You can read how to use at https://xecrethub.com.",
+    'usage': "Instructions on usage are here: https://xecrethub.com.",
+    'guide': "Find the usage guide here: https://xecrethub.com.",
+    'instructions': "Instructions on usage are here: https://xecrethub.com.",
+    'update': "Go to https://discord.com/channels/1328392700294070313/1335520199205585000.",
+    'version': "Go to https://discord.com/channels/1328392700294070313/1335520199205585000.",
+    'latest version': "Check latest version here: https://discord.com/channels/1328392700294070313/1335520199205585000.",
+    'latest update': "Check latest update here: https://discord.com/channels/1328392700294070313/1335520199205585000.",
+    'refund': "We do not accept refunds.",
+    'can i refund': "We do not provide refunds as per our terms.",
 }
 
 @bot.event
@@ -306,74 +330,12 @@ async def on_message(message):
                 await bot.process_commands(message)
                 return
 
-            lower_msg = message.content.lower()
-            for keyword, reply_text in KEYWORD_AUTO_REPLIES.items():
-                if keyword in lower_msg:
-                    try:
-                        reply_msg = await message.reply(reply_text, mention_author=False)
-
-                        async def delete_reply_later(msg):
-                            await asyncio.sleep(5)
-                            try:
-                                await msg.delete()
-                            except Exception as e:
-                                pass
-
-                        bot.loop.create_task(delete_reply_later(reply_msg))
-
-                    except Exception as e:
-                        pass
-                    break 
-
-            if any(user.id in PROTECTED_USER_IDS for user in message.mentions):
-
-                user_has_allowed_role = False
-                if hasattr(message.author, 'roles'):
-                    for role in message.author.roles:
-                        if role.id in ALLOWED_PING_ROLE_IDS:
-                            user_has_allowed_role = True
-                            break
-
-                if not user_has_allowed_role:
-                    try:
-                        await message.delete()
-                        await message.channel.send(
-                            f"<@{message.author.id}>, you are not allowed to ping this user. You have been timed out for {TIMEOUT_DURATION} seconds.",
-                            delete_after=5
-                        )
-                        timed_out_until = discord.utils.utcnow() + datetime.timedelta(seconds=TIMEOUT_DURATION)
-                        await message.author.edit(timed_out_until=timed_out_until, reason="Pinged protected user")
-                        try:
-                            await message.author.send(
-                                f"You Ping, the person who is working, are so annoying. Go die. You have been timed out for {TIMEOUT_DURATION} seconds."
-                            )
-                        except:
-                            pass
-                    except:
-                        pass
-
-            if message.author.id not in WHITELIST_USER_IDS and any(bad_word in message.content.lower() for bad_word in BAD_WORDS):
-                try:
-                    await message.delete()
-                    await message.channel.send(
-                        f"<@{message.author.id}>, I hate these words. You have been timed out for {TIMEOUT_DURATION} seconds.",
-                        delete_after=5
-                    )
-                    timed_out_until = discord.utils.utcnow() + datetime.timedelta(seconds=TIMEOUT_DURATION)
-                    await message.author.edit(timed_out_until=timed_out_until, reason="Used bad language")
-                    try:
-                        await message.author.send(
-                            f"You say bad words, trash words, just like your face. You have been timed out for {TIMEOUT_DURATION} seconds."
-                        )
-                    except:
-                        pass
-                except:
-                    pass
+            
 
             if message.channel.id in ALLOWED_CHANNEL_IDS:
                 content = message.content.strip()
 
-                if content.startswith('-'):
+                if content.startswith('.'):
                     await bot.process_commands(message)
                     return
 
@@ -393,12 +355,8 @@ async def on_message(message):
                     pass
                 return
 
-            if message.content.startswith('-') and message.channel.id not in ALLOWED_CHANNEL_IDS:
-                if not (
-                    message.content.startswith('-send') or 
-                    message.content.startswith('-add_whitelist') or 
-                    message.content.startswith('-remove_whitelist')
-                ):
+            if message.content.startswith('.') and message.channel.id not in ALLOWED_CHANNEL_IDS:
+                if not message.content.startswith('.send'):
                     try:
                         await message.reply(
                             "Use the command at https://discord.com/channels/1328392700294070313/1380891908376760401.",
@@ -476,12 +434,12 @@ async def loginsignup(ctx):
 @bot.command()
 async def help(ctx):
             embed = discord.Embed(title="Bot Commands", color=0x3498db)
-            embed.add_field(name="-website", value="Send website link with button", inline=False)
-            embed.add_field(name="-supported_games", value="Get list of supported games", inline=False)
-            embed.add_field(name="-supported_executors", value="Get list of supported executors", inline=False)
-            embed.add_field(name="-purchase", value="How to purchase", inline=False)
-            embed.add_field(name="-terms", value="Terms", inline=False)
-            embed.add_field(name="-send_buttons", value="Send command buttons", inline=False)
+            embed.add_field(name=".website", value="Send website link with button", inline=False)
+            embed.add_field(name=".supported_games", value="Get list of supported games", inline=False)
+            embed.add_field(name=".supported_executors", value="Get list of supported executors", inline=False)
+            embed.add_field(name=".purchase", value="How to purchase", inline=False)
+            embed.add_field(name=".terms", value="Terms", inline=False)
+            embed.add_field(name=".send_buttons", value="Send command buttons", inline=False)
             await ctx.send(embed=embed)
 
 @bot.command()
@@ -512,45 +470,7 @@ async def send(ctx, *, args: str):
             except:
                 pass
 
-@bot.command()
-@commands.has_permissions(administrator=True)
-async def add_whitelist(ctx, user_id: int):
-            if user_id not in WHITELIST_USER_IDS:
-                WHITELIST_USER_IDS.append(user_id)
-                reply = await ctx.send(f"User {user_id} has been added to whitelist.")
-            else:
-                reply = await ctx.send(f"User {user_id} is already in whitelist.")
 
-            try:
-                await ctx.message.delete()
-            except:
-                pass
-
-            await asyncio.sleep(5)
-            try:
-                await reply.delete()
-            except:
-                pass
-
-@bot.command()
-@commands.has_permissions(administrator=True)
-async def remove_whitelist(ctx, user_id: int):
-            if user_id in WHITELIST_USER_IDS:
-                WHITELIST_USER_IDS.remove(user_id)
-                reply = await ctx.send(f"User {user_id} has been removed from whitelist.")
-            else:
-                reply = await ctx.send(f"User {user_id} is not in whitelist.")
-
-            try:
-                await ctx.message.delete()
-            except:
-                pass
-
-            await asyncio.sleep(5)
-            try:
-                await reply.delete()
-            except:
-                pass
 
 @bot.tree.command(name="question", description="Ask a question and get automatic reply")
 @app_commands.describe(query="Your question")
