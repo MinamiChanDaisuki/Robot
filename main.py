@@ -216,7 +216,7 @@ async def youtube_feed_check_loop():
                                     title=video_title,
                                     url=video_url,
                                     description=video_description,
-                                    color=0xFF0000
+                                    color=0xFFFFF
                                 )
                                 embed.set_image(url=thumbnail_url)
                                 embed.add_field(name="Content", value=content_value[:1024], inline=False)
@@ -472,7 +472,7 @@ async def showcase(ctx):
                 title=video_title,
                 url=video_url,
                 description=video_description,
-                color=0xFF0000
+                color=0xFFFFFF
             )
             embed.set_image(url=thumbnail_url)
             embed.add_field(name="Content", value=content_value[:1024], inline=False)
