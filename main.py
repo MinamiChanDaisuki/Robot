@@ -390,7 +390,7 @@ async def on_message(message):
                     pass
                 return
 
-            basic_commands = ['.purchase', '.website', '.supported_games', '.supported_executors', '.terms']
+            basic_commands = ['.purchase', '.website', '.supported_games', '.supported_executors', '.terms', '.showcase']
             if message.content.startswith('.') and message.channel.id not in ALLOWED_CHANNEL_IDS:
                 command_name = message.content.split()[0].lower()
 
