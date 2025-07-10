@@ -398,7 +398,7 @@ async def on_message(message):
 async def website(ctx):
             embed = discord.Embed(
                 title="Visit our Website",
-                description="Click the button below to visit:",
+                description="Click the button below to visit our official website.",
                 color=0xFFFFFF
             )
             embed.set_image(url=BANNER_URL)
