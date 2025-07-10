@@ -453,7 +453,7 @@ async def purchase(ctx):
 async def terms(ctx):
             embed = discord.Embed(
                 title="Terms",
-                description="[Terms](https://xecrethub.com/terms)",
+                description="https://xecrethub.com/terms",
                 color=0xFFFFFF
             )
             embed.set_image(url=BANNER_URL)
