@@ -91,6 +91,7 @@ AUTO_RESPONSES = {
     'error': "If you encounter an error, please contact support via https://discord.com/channels/1328392700294070313/1348578938024104006.",
     'not working': "If something is not working, please contact support via https://discord.com/channels/1328392700294070313/1348578938024104006.",
     'crash': "If it crashes, please report the issue at https://discord.com/channels/1328392700294070313/1348578938024104006.",
+    'lag': "If it lag, please report the issue at https://discord.com/channels/1328392700294070313/1348578938024104006.",
     'broken': "If something's broken, reach out via https://discord.com/channels/1328392700294070313/1348578938024104006.",
     'bug': "If something's broken, reach out via https://discord.com/channels/1328392700294070313/1348578938024104006.",
     'issue': "If you have an issue, please report it at https://discord.com/channels/1328392700294070313/1348578938024104006.",
@@ -209,10 +210,6 @@ async def youtube_feed_check_loop():
 
 @bot.command()
 async def send_buttons(ctx):
-            if ctx.channel.id not in ALLOWED_CHANNEL_IDS:
-                await ctx.send("You can use this command only in the allowed channel.")
-                return
-
             embed = discord.Embed(
                 title="Xecret Hub Control Panel",
                 description="Select an option below to view information or perform an action.",
@@ -449,10 +446,6 @@ async def loginsignup(ctx):
 
 @bot.command()
 async def send_questions(ctx):
-            if ctx.channel.id not in ALLOWED_CHANNEL_IDS:
-                await ctx.send("You can use this command only in the allowed channel.")
-                return
-
             channel = bot.get_channel(1381039725791674490)
             if channel:
                 embed = discord.Embed(title="How to use the question?", color=0xFFFFFF)
