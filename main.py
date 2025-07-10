@@ -7,7 +7,11 @@ import feedparser
 import os
 import requests 
 
-from myserver import server_on
+try:
+    from myserver import server_on
+except ImportError:
+    def server_on():
+        pass
 
 latest_video_id = None
 intents = discord.Intents.default()
@@ -473,7 +477,7 @@ async def showcase(ctx):
             thumbnail_url = f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg"
             video_description = "This is a test showcase of the YouTube notification system."
             content_value = "Testing the video notification format with all required fields."
-            
+
             embed = discord.Embed(
                 title=video_title,
                 url=video_url,
@@ -484,7 +488,7 @@ async def showcase(ctx):
             embed.add_field(name="Content", value=content_value[:1024], inline=False)
             embed.add_field(name="Video URL", value=video_url, inline=False)
             embed.add_field(name="Thumbnail URL", value=thumbnail_url, inline=False)
-            
+
             await ctx.send(content="<@&1383766143939903528>", embed=embed)
 
 @bot.command()
