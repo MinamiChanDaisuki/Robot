@@ -6,6 +6,7 @@ import datetime
 import feedparser
 import os
 import requests 
+import json
 
 try:
     from myserver import server_on
@@ -23,6 +24,7 @@ bot = commands.Bot(command_prefix='.', intents=intents, help_command=None)
 TARGET_BOT_ID = 1296471355994144891
 
 LATEST_VIDEO_FILE = "latest_video_id.txt"
+SENT_VIDEOS_FILE = "sent_videos.json"
 
 ALLOWED_CHANNEL_IDS = [1380891908376760401, 1381039725791674490]
 
@@ -161,21 +163,45 @@ def save_latest_video_id(video_id):
         with open(LATEST_VIDEO_FILE, "w") as f:
             f.write(video_id)
 
+def load_sent_videos():
+        if os.path.exists(SENT_VIDEOS_FILE):
+            with open(SENT_VIDEOS_FILE, "r") as f:
+                return json.load(f)
+        return {"UC5abJGhz74y-cw88wFqX0Jw": [], "UCoLxgTtHYNA8AjOJB1rU-2g": []}
+
+def save_sent_videos(sent_videos):
+        with open(SENT_VIDEOS_FILE, "w") as f:
+            json.dump(sent_videos, f)
+
+def is_video_already_sent(channel_id, video_id, sent_videos):
+        return video_id in sent_videos.get(channel_id, [])
+
+def add_sent_video(channel_id, video_id, sent_videos):
+        if channel_id not in sent_videos:
+            sent_videos[channel_id] = []
+        if video_id not in sent_videos[channel_id]:
+            sent_videos[channel_id].append(video_id)
+            # Keep only last 50 videos to prevent file from getting too large
+            if len(sent_videos[channel_id]) > 50:
+                sent_videos[channel_id] = sent_videos[channel_id][-50:]
+
 async def youtube_feed_check_loop():
         global latest_video_id
         latest_video_id = load_latest_video_id()
+        sent_videos = load_sent_videos()
         await bot.wait_until_ready()
 
         channel = bot.get_channel(1328406450489393253)
-        feed_urls = [
-            'https://www.youtube.com/feeds/videos.xml?channel_id=UC5abJGhz74y-cw88wFqX0Jw',
-            'https://www.youtube.com/feeds/videos.xml?channel_id=UCoLxgTtHYNA8AjOJB1rU-2g'
+        feed_data = [
+            {'url': 'https://www.youtube.com/feeds/videos.xml?channel_id=UC5abJGhz74y-cw88wFqX0Jw', 'id': 'UC5abJGhz74y-cw88wFqX0Jw'},
+            {'url': 'https://www.youtube.com/feeds/videos.xml?channel_id=UCoLxgTtHYNA8AjOJB1rU-2g', 'id': 'UCoLxgTtHYNA8AjOJB1rU-2g'}
         ]
 
         while not bot.is_closed():
             try:
-                for feed_url in feed_urls:
-                    feed = feedparser.parse(feed_url)
+                for feed_info in feed_data:
+                    feed = feedparser.parse(feed_info['url'])
+                    channel_id = feed_info['id']
 
                     if feed.entries:
                         latest_entry = feed.entries[0]
@@ -189,44 +215,27 @@ async def youtube_feed_check_loop():
                             else:
                                 video_id = None
 
-                        video_title = latest_entry.title
-                        video_url = f"https://www.youtube.com/watch?v={video_id}"
-
-                        if latest_video_id != video_id:
-                            latest_video_id = video_id
-                            save_latest_video_id(video_id)
+                        if video_id and not is_video_already_sent(channel_id, video_id, sent_videos):
+                            video_title = latest_entry.title
+                            video_url = f"https://www.youtube.com/watch?v={video_id}"
 
                             if channel:
+                                thumbnail_url = f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg"
+                                video_description = getattr(latest_entry, 'summary', 'No description available')
 
-                                video_already_sent = False
-                                try:
-                                    async for old_message in channel.history(limit=50):
-                                        if video_url in old_message.content:
-                                            video_already_sent = True
-                                            break
-                                except Exception as e:
-                                    pass
+                                embed = discord.Embed(
+                                    title=video_title,
+                                    url=video_url,
+                                    description=video_description,
+                                    color=0xFFA500
+                                )
+                                embed.set_image(url=thumbnail_url)
 
-                                if not video_already_sent:
-                                    thumbnail_url = f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg"
-                                    video_description = getattr(latest_entry, 'summary', 'No description available')
-                                    video_content = getattr(latest_entry, 'content', [{}])
-                                    if video_content and len(video_content) > 0:
-                                        content_value = video_content[0].get('value', 'No content available')
-                                    else:
-                                        content_value = 'No content available'
-
-                                    embed = discord.Embed(
-                                        title=video_title,
-                                        url=video_url,
-                                        description=video_description,
-                                        color=0xFFA500
-                                    )
-                                    embed.set_image(url=thumbnail_url)
-                                    embed.add_field(name="Video URL", value=video_url, inline=False)
-                                    embed.add_field(name="Thumbnail URL", value=thumbnail_url, inline=False)
-
-                                    await channel.send(content="<@&1383766143939903528>", embed=embed)
+                                await channel.send(content="<@&1383766143939903528>", embed=embed)
+                                
+                                # Mark video as sent
+                                add_sent_video(channel_id, video_id, sent_videos)
+                                save_sent_videos(sent_videos)
 
             except Exception as e:
                 pass
@@ -465,16 +474,16 @@ async def terms(ctx):
 @bot.command()
 async def showcase(ctx):
             try:
-                feed_urls = [
-                    'https://www.youtube.com/feeds/videos.xml?channel_id=UC5abJGhz74y-cw88wFqX0Jw',
-                    'https://www.youtube.com/feeds/videos.xml?channel_id=UCoLxgTtHYNA8AjOJB1rU-2g'
+                feed_data = [
+                    {'url': 'https://www.youtube.com/feeds/videos.xml?channel_id=UC5abJGhz74y-cw88wFqX0Jw', 'id': 'UC5abJGhz74y-cw88wFqX0Jw'},
+                    {'url': 'https://www.youtube.com/feeds/videos.xml?channel_id=UCoLxgTtHYNA8AjOJB1rU-2g', 'id': 'UCoLxgTtHYNA8AjOJB1rU-2g'}
                 ]
-                
+
                 latest_video = None
                 latest_published = None
-                
-                for feed_url in feed_urls:
-                    feed = feedparser.parse(feed_url)
+
+                for feed_info in feed_data:
+                    feed = feedparser.parse(feed_info['url'])
                     if feed.entries:
                         entry = feed.entries[0]
                         published = entry.published_parsed
@@ -497,11 +506,6 @@ async def showcase(ctx):
                     video_url = f"https://www.youtube.com/watch?v={video_id}"
                     thumbnail_url = f"https://img.youtube.com/vi/{video_id}/maxresdefault.jpg"
                     video_description = getattr(latest_video, 'summary', 'No description available')
-                    video_content = getattr(latest_video, 'content', [{}])
-                    if video_content and len(video_content) > 0:
-                        content_value = video_content[0].get('value', 'No content available')
-                    else:
-                        content_value = 'No content available'
 
                     embed = discord.Embed(
                         title=video_title,
@@ -510,8 +514,6 @@ async def showcase(ctx):
                         color=0xFFA500
                     )
                     embed.set_image(url=thumbnail_url)
-                    embed.add_field(name="Video URL", value=video_url, inline=False)
-                    embed.add_field(name="Thumbnail URL", value=thumbnail_url, inline=False)
 
                     await ctx.send(content="<@&1383766143939903528>", embed=embed)
                 else:
