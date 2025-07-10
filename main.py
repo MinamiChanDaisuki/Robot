@@ -138,7 +138,7 @@ async def on_ready():
                             break
 
                 if not already_sent:
-                    embed = discord.Embed(title="How to use the question?", color=0xFFFFFF)
+                    embed = discord.Embed(title="How to use the question?", color=0xFFA500)
                     embed.add_field(
                         name="/question",
                         value="Ask a question and get an automatic reply.\nExample: `/question how much`",
@@ -216,7 +216,7 @@ async def youtube_feed_check_loop():
                                     title=video_title,
                                     url=video_url,
                                     description=video_description,
-                                    color=0xFFFFF
+                                    color=0xFFA500
                                 )
                                 embed.set_image(url=thumbnail_url)
                                 embed.add_field(name="Content", value=content_value[:1024], inline=False)
@@ -235,7 +235,7 @@ async def send_buttons(ctx):
             embed = discord.Embed(
                 title="Xecret Hub Control Panel",
                 description="Select an option below to view information or perform an action.",
-                color=0xFFFFFF
+                color=0xFFA500
             )
             embed.set_image(url=BANNER_URL)
 
@@ -296,7 +296,7 @@ async def send_webhook_notification(message, whitelist_msg):
 
     embed = {
         "title": "📌 Detect whitelisting",
-        "color": 0x00ff99,
+        "color": 0xFFA500,
         "fields": [
             {
                 "name": "✅ Bot message reply",
@@ -412,7 +412,7 @@ async def website(ctx):
             embed = discord.Embed(
                 title="Visit our Website",
                 description="Click the button below to visit our official website.",
-                color=0xFFFFFF
+                color=0xFFA500
             )
             embed.set_image(url=BANNER_URL)
             view = discord.ui.View(timeout=None)
@@ -424,7 +424,7 @@ async def supported_games(ctx):
             embed = discord.Embed(
                 title="Supported Games",
                 description="https://xecrethub.com/games",
-                color=0xFFFFFF
+                color=0xFFA500
             )
             embed.set_image(url=BANNER_URL)
             await ctx.send(embed=embed)
@@ -434,7 +434,7 @@ async def supported_executors(ctx):
             embed = discord.Embed(
                 title="Supported Executors",
                 description="https://xecrethub.com/executors",
-                color=0xFFFFFF
+                color=0xFFA500
             )
             embed.set_image(url=BANNER_URL)
             await ctx.send(embed=embed)
@@ -444,7 +444,7 @@ async def purchase(ctx):
             embed = discord.Embed(
                 title="Purchase",
                 description="https://xecrethub.com/purchase",
-                color=0xFFFFFF
+                color=0xFFA500
             )
             embed.set_image(url=BANNER_URL)
             await ctx.send(embed=embed)
@@ -454,7 +454,7 @@ async def terms(ctx):
             embed = discord.Embed(
                 title="Terms",
                 description="https://xecrethub.com/terms",
-                color=0xFFFFFF
+                color=0xFFA500
             )
             embed.set_image(url=BANNER_URL)
             await ctx.send(embed=embed)
@@ -472,7 +472,7 @@ async def showcase(ctx):
                 title=video_title,
                 url=video_url,
                 description=video_description,
-                color=0xFFFFFF
+                color=0xFFA500
             )
             embed.set_image(url=thumbnail_url)
             embed.add_field(name="Content", value=content_value[:1024], inline=False)
@@ -486,7 +486,7 @@ async def loginsignup(ctx):
             embed = discord.Embed(
                 title="Terms",
                 description="[Terms](https://xecrethub.com/terms)",
-                color=0xFFFFFF
+                color=0xFFA500
             )
             embed.set_image(url=BANNER_URL)
             await ctx.send(embed=embed)
@@ -495,7 +495,7 @@ async def loginsignup(ctx):
 async def send_questions(ctx):
             channel = bot.get_channel(1381039725791674490)
             if channel:
-                embed = discord.Embed(title="How to use the question?", color=0xFFFFFF)
+                embed = discord.Embed(title="How to use the question?", color=0xFFA500)
                 embed.add_field(
                     name="/question",
                     value="Ask a question and get an automatic reply.\nExample: `/question how much`",
@@ -507,7 +507,7 @@ async def send_questions(ctx):
 
 @bot.command()
 async def help(ctx):
-            embed = discord.Embed(title="Bot Commands", color=0x3498db)
+            embed = discord.Embed(title="Bot Commands", color=0xFFA500)
             embed.add_field(name=".website", value="Send website link with button", inline=False)
             embed.add_field(name=".supported_games", value="Get list of supported games", inline=False)
             embed.add_field(name=".supported_executors", value="Get list of supported executors", inline=False)
