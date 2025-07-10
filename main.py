@@ -368,8 +368,15 @@ async def on_message(message):
                     pass
                 return
 
+            # Allow basic commands in all channels
+            basic_commands = ['.purchase', '.website', '.supported_games', '.supported_executors', '.terms']
             if message.content.startswith('.') and message.channel.id not in ALLOWED_CHANNEL_IDS:
-                if not message.content.startswith('.send'):
+                command_name = message.content.split()[0].lower()
+                
+                if command_name in basic_commands or message.content.startswith('.send'):
+                    await bot.process_commands(message)
+                    return
+                else:
                     try:
                         await message.reply(
                             "Use the command at https://discord.com/channels/1328392700294070313/1380891908376760401.",
@@ -381,9 +388,6 @@ async def on_message(message):
                     except:
                         pass
                     return
-
-                await bot.process_commands(message)
-                return
 
             response_patterns = ['whitelisted', 'whitelist', 'added to whitelist', 'successfully whitelisted', 'you have been whitelisted']
             if message.author.id == TARGET_BOT_ID and any(pattern in message.content.lower() for pattern in response_patterns):
@@ -476,22 +480,42 @@ async def send(ctx, *, args: str):
             parts = args.split()
 
             if len(parts) >= 2:
-                potential_channel_id = parts[-1]
-                if potential_channel_id.isdigit() and len(potential_channel_id) >= 15:
+                potential_channel = parts[-1]
+                
+                # Check if it's a Discord channel link
+                if potential_channel.startswith("https://discord.com/channels/"):
                     try:
-                        channel_id = int(potential_channel_id)
+                        # Extract channel ID from Discord link
+                        # Format: https://discord.com/channels/server_id/channel_id
+                        channel_id = potential_channel.split('/')[-1]
+                        channel_id = int(channel_id)
                         target_channel = bot.get_channel(channel_id)
                         if target_channel:
                             message = ' '.join(parts[:-1])
                             await target_channel.send(message)
+                            await ctx.send(f"Message sent to {target_channel.mention}")
+                        else:
+                            await ctx.send("Channel not found from the provided link.")
+                    except (ValueError, IndexError):
+                        await ctx.send("Invalid Discord channel link format.")
+                
+                # Check if it's a direct channel ID (legacy support)
+                elif potential_channel.isdigit() and len(potential_channel) >= 15:
+                    try:
+                        channel_id = int(potential_channel)
+                        target_channel = bot.get_channel(channel_id)
+                        if target_channel:
+                            message = ' '.join(parts[:-1])
+                            await target_channel.send(message)
+                            await ctx.send(f"Message sent to {target_channel.mention}")
                         else:
                             await ctx.send("Channel not found.")
                     except ValueError:
-                        await ctx.send(args)
+                        await ctx.send("Invalid channel ID.")
                 else:
-                    await ctx.send(args)
+                    await ctx.send("Please provide a valid Discord channel link or channel ID.")
             else:
-                await ctx.send(args)
+                await ctx.send("Usage: `.send [message] [channel_link_or_id]`")
 
             try:
                 await ctx.message.delete()
