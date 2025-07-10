@@ -398,16 +398,6 @@ async def on_message(message):
                     await bot.process_commands(message)
                     return
                 else:
-                    try:
-                        await message.reply(
-                            "Use the command at https://discord.com/channels/1328392700294070313/1380891908376760401.",
-                            mention_author=False,
-                            delete_after=5
-                        )
-                        await asyncio.sleep(5)
-                        await message.delete()
-                    except:
-                        pass
                     return
 
             response_patterns = ['whitelisted', 'whitelist', 'added to whitelist', 'successfully whitelisted', 'you have been whitelisted']
