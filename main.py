@@ -330,9 +330,9 @@ async def on_message(message):
                 await bot.process_commands(message)
                 return
 
-            
 
-            if message.channel.id in ALLOWED_CHANNEL_IDS:
+
+            if message.channel.id == 1381039725791674490:
                 content = message.content.strip()
 
                 if content.startswith('.'):
@@ -340,10 +340,26 @@ async def on_message(message):
                     return
 
                 if content.startswith('/question'):
+                    return
+
+                if content.startswith('/'):
                     try:
                         await message.delete()
                     except Exception as e:
                         pass
+                    return
+
+                try:
+                    await message.delete()
+                except Exception as e:
+                    pass
+                return
+
+            if message.channel.id == 1380891908376760401:
+                content = message.content.strip()
+
+                if content.startswith('.'):
+                    await bot.process_commands(message)
                     return
 
                 if content.startswith('/'):
@@ -432,6 +448,24 @@ async def loginsignup(ctx):
             await ctx.send(embed=embed)
 
 @bot.command()
+async def send_questions(ctx):
+            if ctx.channel.id not in ALLOWED_CHANNEL_IDS:
+                await ctx.send("You can use this command only in the allowed channel.")
+                return
+
+            channel = bot.get_channel(1381039725791674490)
+            if channel:
+                embed = discord.Embed(title="How to use the question?", color=0xFFFFFF)
+                embed.add_field(
+                    name="/question",
+                    value="Ask a question and get an automatic reply.\nExample: `/question how much`",
+                    inline=False
+                )
+                embed.set_footer(text=f"https://xecrethub.com | Sent at {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+                embed.set_image(url=BANNER_URL)
+                await channel.send(embed=embed)
+
+@bot.command()
 async def help(ctx):
             embed = discord.Embed(title="Bot Commands", color=0x3498db)
             embed.add_field(name=".website", value="Send website link with button", inline=False)
@@ -440,6 +474,7 @@ async def help(ctx):
             embed.add_field(name=".purchase", value="How to purchase", inline=False)
             embed.add_field(name=".terms", value="Terms", inline=False)
             embed.add_field(name=".send_buttons", value="Send command buttons", inline=False)
+            embed.add_field(name=".send_questions", value="Send question instructions", inline=False)
             await ctx.send(embed=embed)
 
 @bot.command()
