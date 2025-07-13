@@ -253,7 +253,7 @@ async def help(ctx):
     embed.add_field(name=".showcase", value="เทสระบบวิดีโอแจ้งเตือนยูทูป", inline=False)
     embed.add_field(name=".ban [ไอดี] [เหตุผล]", value="แบน", inline=False)
     embed.add_field(name=".kick [ไอดี] [เหตุผล]", value="เตะ", inline=False)
-    embed.add_field(name=".to [ไอดี] [เหตุผล]", value="หมดเวลา", inline=False)
+    embed.add_field(name=".timeout [ไอดี] [เหตุผล]", value="หมดเวลา", inline=False)
     embed.add_field(name=".pur [จำนวน]", value="ลบข้อความจำนวนที่กำหนด", inline=False)
     await ctx.send(embed=embed)
 
