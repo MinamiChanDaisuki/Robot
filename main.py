@@ -240,9 +240,9 @@ async def youtube_feed_check_loop():
 
             await asyncio.sleep(60)
 
-@commands.has_permissions(administrator=True) 
-@bot.command(name="commands")
-async def show_commands(ctx):
+@commands.has_permissions(administrator=True)
+@bot.command(name="commands")  
+async def show_commands(ctx):  
     embed = discord.Embed(title="คำสั่งของบอท", color=0xFFA500)
     embed.add_field(name=".website", value="ส่งลิงก์เว็บไซต์พร้อมปุ่ม", inline=False)
     embed.add_field(name=".supported_games", value="แสดงรายการเกมที่รองรับ", inline=False)
@@ -257,7 +257,6 @@ async def show_commands(ctx):
     embed.add_field(name=".timeout [ไอดี] [เหตุผล]", value="หมดเวลา", inline=False)
     embed.add_field(name=".pur [จำนวน]", value="ลบข้อความจำนวนที่กำหนด", inline=False)
     await ctx.send(embed=embed)
-
 
 @bot.command()
 @commands.has_permissions(administrator=True)
