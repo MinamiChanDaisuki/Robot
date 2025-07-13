@@ -241,7 +241,7 @@ async def youtube_feed_check_loop():
             await asyncio.sleep(60)
 
 @bot.command()
-async def help(ctx):
+async def commands(ctx):
     embed = discord.Embed(title="คำสั่งของบอท", color=0xFFA500)
     embed.add_field(name=".website", value="ส่งลิงก์เว็บไซต์พร้อมปุ่ม", inline=False)
     embed.add_field(name=".supported_games", value="แสดงรายการเกมที่รองรับ", inline=False)
@@ -283,7 +283,8 @@ async def kick(ctx, member: discord.Member, *, reason=None):
 @bot.command()
 @commands.has_permissions(moderate_members=True)
 async def to(ctx, member: discord.Member, timeout: int, *, reason=None):
-    await member.timeout(discord.utils.timedelta(seconds=timeout), reason=reason)
+    from datetime import timedelta
+    await member.timeout(timedelta(seconds=timeout), reason=reason)
     await ctx.send(f"{member.mention} has been timed out for {timeout} seconds. Reason: {reason}")
 
 @bot.command()
@@ -603,17 +604,6 @@ async def send_questions(ctx):
                 embed.set_image(url=BANNER_URL)
                 await channel.send(embed=embed)
 
-@bot.command()
-async def help(ctx):
-            embed = discord.Embed(title="Bot Commands", color=0xFFA500)
-            embed.add_field(name=".website", value="Send website link with button", inline=False)
-            embed.add_field(name=".supported_games", value="Get list of supported games", inline=False)
-            embed.add_field(name=".supported_executors", value="Get list of supported executors", inline=False)
-            embed.add_field(name=".purchase", value="How to purchase", inline=False)
-            embed.add_field(name=".terms", value="Terms", inline=False)
-            embed.add_field(name=".send_buttons", value="Send command buttons", inline=False)
-            embed.add_field(name=".send_questions", value="Send question instructions", inline=False)
-            await ctx.send(embed=embed)
 
 @bot.command()
 @commands.has_permissions(administrator=True)
