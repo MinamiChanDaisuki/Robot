@@ -241,6 +241,67 @@ async def youtube_feed_check_loop():
             await asyncio.sleep(60)
 
 @bot.command()
+async def help(ctx):
+    embed = discord.Embed(title="คำสั่งของบอท", color=0xFFA500)
+    embed.add_field(name=".website", value="ส่งลิงก์เว็บไซต์พร้อมปุ่ม", inline=False)
+    embed.add_field(name=".supported_games", value="แสดงรายการเกมที่รองรับ", inline=False)
+    embed.add_field(name=".supported_executors", value="แสดงรายการ executor ที่รองรับ", inline=False)
+    embed.add_field(name=".purchase", value="ข้อมูลการซื้อ", inline=False)
+    embed.add_field(name=".terms", value="ดูเงื่อนไขการใช้งาน", inline=False)
+    embed.add_field(name=".send_buttons", value="ส่งปุ่มคำสั่ง", inline=False)
+    embed.add_field(name=".send_questions", value="ส่งคำแนะนำการถามคำถาม", inline=False)
+    embed.add_field(name=".showcase", value="เทสระบบวิดีโอแจ้งเตือนยูทูป", inline=False)
+    embed.add_field(name=".ban [ไอดี] [เหตุผล]", value="แบน", inline=False)
+    embed.add_field(name=".kick [ไอดี] [เหตุผล]", value="เตะ", inline=False)
+    embed.add_field(name=".to [ไอดี] [เหตุผล]", value="หมดเวลา", inline=False)
+    embed.add_field(name=".pur [จำนวน]", value="ลบข้อความจำนวนที่กำหนด", inline=False)
+    await ctx.send(embed=embed)
+
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def spam(ctx, times: int, *, message: str):
+    if times <= 0:
+        await ctx.send("Please provide a positive number of times.")
+        return
+    for _ in range(times):
+        await ctx.send(message)
+        
+    await ctx.send(f"Sent the message '{message}' {times} times.")
+
+@bot.command()
+@commands.has_permissions(ban_members=True)
+async def ban(ctx, member: discord.Member, *, reason=None):
+    await member.ban(reason=reason)
+    await ctx.send(f"{member.mention} has been banned. Reason: {reason}")
+
+@bot.command()
+@commands.has_permissions(kick_members=True)
+async def kick(ctx, member: discord.Member, *, reason=None):
+    await member.kick(reason=reason)
+    await ctx.send(f"{member.mention} has been kicked. Reason: {reason}")
+
+@bot.command()
+@commands.has_permissions(moderate_members=True)
+async def to(ctx, member: discord.Member, timeout: int, *, reason=None):
+    await member.timeout(discord.utils.timedelta(seconds=timeout), reason=reason)
+    await ctx.send(f"{member.mention} has been timed out for {timeout} seconds. Reason: {reason}")
+
+@bot.command()
+@commands.has_permissions(manage_messages=True)  
+async def pur(ctx, amount: int):
+    if amount < 1:
+        return  
+
+    try:
+        deleted = await ctx.channel.purge(limit=amount + 1)  
+        await asyncio.sleep(1)  
+        await ctx.message.delete()  
+    except discord.Forbidden:
+        return  
+    except discord.HTTPException:
+        return  
+
+@bot.command()
 async def send_buttons(ctx):
             embed = discord.Embed(
                 title="Xecret Hub Control Panel",
@@ -285,7 +346,7 @@ async def send_webhook_notification(message, whitelist_msg):
 
     guild = message.guild
     role_members = []
-    target_role_id = 1372539215090290778
+    target_role_id = 1379163254953349333
 
     if guild:
         target_role = guild.get_role(target_role_id)
@@ -415,7 +476,6 @@ async def on_message(message):
                 await send_webhook_notification(message, None)
 
             await bot.process_commands(message)
-
 
 @bot.command()
 async def website(ctx):
