@@ -192,8 +192,8 @@ async def youtube_feed_check_loop():
 
         channel = bot.get_channel(1328406450489393253)
         feed_data = [
-            {'url': 'https://www.youtube.com/feeds/videos.xml?channel_id=UC5abJGhz74y-cw88wFqX0Jw', 'id': 'UC5abJGhz74y-cw88wFqX0Jw'},
-            {'url': 'https://www.youtube.com/feeds/videos.xml?channel_id=UCoLxgTtHYNA8AjOJB1rU-2g', 'id': 'UCoLxgTtHYNA8AjOJB1rU-2g'}
+            {'url': os.getenv('Xecret_Hub_Englsih_Channel'), 'id': 'UC5abJGhz74y-cw88wFqX0Jw'},
+            {'url': os.getenv('Xecret_Hub_Thailand_Channel'), 'id': 'UCoLxgTtHYNA8AjOJB1rU-2g'}
         ]
 
         while not bot.is_closed():
