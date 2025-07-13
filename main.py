@@ -259,49 +259,51 @@ async def show_commands(ctx):
     await ctx.send(embed=embed)
 
 @bot.command()
-@commands.has_permissions(administrator=True)
-async def spam(ctx, times: int, *, message: str):
-    if times <= 0:
-        await ctx.send("Please provide a positive number of times.")
-        return
-    for _ in range(times):
-        await ctx.send(message)
-        
-    await ctx.send(f"Sent the message '{message}' {times} times.")
-
-@bot.command()
 @commands.has_permissions(ban_members=True)
 async def ban(ctx, member: discord.Member, *, reason=None):
-    await member.ban(reason=reason)
-    await ctx.send(f"{member.mention} has been banned. Reason: {reason}")
+    try:
+        await member.ban(reason=reason)
+        await ctx.send(f"{member.mention} has been banned. Reason: {reason}")
+    except discord.Forbidden:
+        await ctx.send("I do not have permission to ban this member.")
+    except discord.HTTPException:
+        await ctx.send("There was an error trying to ban this member.")
 
 @bot.command()
 @commands.has_permissions(kick_members=True)
 async def kick(ctx, member: discord.Member, *, reason=None):
-    await member.kick(reason=reason)
-    await ctx.send(f"{member.mention} has been kicked. Reason: {reason}")
+    try:
+        await member.kick(reason=reason)
+        await ctx.send(f"{member.mention} has been kicked. Reason: {reason}")
+    except discord.Forbidden:
+        await ctx.send("I do not have permission to kick this member.")
+    except discord.HTTPException:
+        await ctx.send("There was an error trying to kick this member.")
 
 @bot.command()
 @commands.has_permissions(moderate_members=True)
-async def to(ctx, member: discord.Member, timeout: int, *, reason=None):
+async def timeout(ctx, member: discord.Member, timeout: int, *, reason=None):
     from datetime import timedelta
-    await member.timeout(timedelta(seconds=timeout), reason=reason)
-    await ctx.send(f"{member.mention} has been timed out for {timeout} seconds. Reason: {reason}")
+    try:
+        await member.timeout(timedelta(seconds=timeout), reason=reason)
+        await ctx.send(f"{member.mention} has been timed out for {timeout} seconds. Reason: {reason}")
+    except discord.Forbidden:
+        await ctx.send("I do not have permission to timeout this member.")
+    except discord.HTTPException:
+        await ctx.send("There was an error trying to timeout this member.")
 
 @bot.command()
-@commands.has_permissions(manage_messages=True)  
+@commands.has_permissions(manage_messages=True)
 async def pur(ctx, amount: int):
     if amount < 1:
-        return  
-
+        return
     try:
         deleted = await ctx.channel.purge(limit=amount + 1)  
-        await asyncio.sleep(1)  
-        await ctx.message.delete()  
+        await ctx.send(f"Deleted {len(deleted) - 1} messages.", delete_after=5)
     except discord.Forbidden:
-        return  
+        await ctx.send("I do not have permission to delete messages.")
     except discord.HTTPException:
-        return  
+        await ctx.send("There was an error trying to delete messages.")
 
 @bot.command()
 async def send_buttons(ctx):
