@@ -240,71 +240,6 @@ async def youtube_feed_check_loop():
 
             await asyncio.sleep(60)
 
-@commands.has_permissions(administrator=True)
-@bot.command(name="commands")  
-async def show_commands(ctx):  
-    embed = discord.Embed(title="คำสั่งของบอท", color=0xFFA500)
-    embed.add_field(name=".website", value="ส่งลิงก์เว็บไซต์พร้อมปุ่ม", inline=False)
-    embed.add_field(name=".supported_games", value="แสดงรายการเกมที่รองรับ", inline=False)
-    embed.add_field(name=".supported_executors", value="แสดงรายการ executor ที่รองรับ", inline=False)
-    embed.add_field(name=".purchase", value="ข้อมูลการซื้อ", inline=False)
-    embed.add_field(name=".terms", value="ดูเงื่อนไขการใช้งาน", inline=False)
-    embed.add_field(name=".send_buttons", value="ส่งปุ่มคำสั่ง", inline=False)
-    embed.add_field(name=".send_questions", value="ส่งคำแนะนำการถามคำถาม", inline=False)
-    embed.add_field(name=".showcase", value="เทสระบบวิดีโอแจ้งเตือนยูทูป", inline=False)
-    embed.add_field(name=".ban [ไอดี] [เหตุผล]", value="แบน", inline=False)
-    embed.add_field(name=".kick [ไอดี] [เหตุผล]", value="เตะ", inline=False)
-    embed.add_field(name=".timeout [ไอดี] [เหตุผล]", value="หมดเวลา", inline=False)
-    embed.add_field(name=".pur [จำนวน]", value="ลบข้อความจำนวนที่กำหนด", inline=False)
-    await ctx.send(embed=embed)
-
-@bot.command()
-@commands.has_permissions(ban_members=True)
-async def ban(ctx, member: discord.Member, *, reason=None):
-    try:
-        await member.ban(reason=reason)
-        await ctx.send(f"{member.mention} has been banned. Reason: {reason}")
-    except discord.Forbidden:
-        await ctx.send("I do not have permission to ban this member.")
-    except discord.HTTPException:
-        await ctx.send("There was an error trying to ban this member.")
-
-@bot.command()
-@commands.has_permissions(kick_members=True)
-async def kick(ctx, member: discord.Member, *, reason=None):
-    try:
-        await member.kick(reason=reason)
-        await ctx.send(f"{member.mention} has been kicked. Reason: {reason}")
-    except discord.Forbidden:
-        await ctx.send("I do not have permission to kick this member.")
-    except discord.HTTPException:
-        await ctx.send("There was an error trying to kick this member.")
-
-@bot.command()
-@commands.has_permissions(moderate_members=True)
-async def timeout(ctx, member: discord.Member, timeout: int, *, reason=None):
-    from datetime import timedelta
-    try:
-        await member.timeout(timedelta(seconds=timeout), reason=reason)
-        await ctx.send(f"{member.mention} has been timed out for {timeout} seconds. Reason: {reason}")
-    except discord.Forbidden:
-        await ctx.send("I do not have permission to timeout this member.")
-    except discord.HTTPException:
-        await ctx.send("There was an error trying to timeout this member.")
-
-@bot.command()
-@commands.has_permissions(manage_messages=True)
-async def pur(ctx, amount: int):
-    if amount < 1:
-        return
-    try:
-        deleted = await ctx.channel.purge(limit=amount + 1)  
-        await ctx.send(f"Deleted {len(deleted) - 1} messages.", delete_after=5)
-    except discord.Forbidden:
-        await ctx.send("I do not have permission to delete messages.")
-    except discord.HTTPException:
-        await ctx.send("There was an error trying to delete messages.")
-
 @bot.command()
 async def send_buttons(ctx):
             embed = discord.Embed(
@@ -397,7 +332,7 @@ async def send_webhook_notification(message, whitelist_msg):
     }
 
     try:
-        webhook_url = os.getenv('KEY_WEBHOOK')
+        webhook_url = os.getenv('Whitelist_Webhook')
         if webhook_url:
             response = requests.post(webhook_url, json=payload)
             response.raise_for_status()
@@ -481,6 +416,7 @@ async def on_message(message):
 
             await bot.process_commands(message)
 
+
 @bot.command()
 async def website(ctx):
             embed = discord.Embed(
@@ -537,8 +473,8 @@ async def terms(ctx):
 async def showcase(ctx):
             try:
                 feed_data = [
-                    {'url': 'https://www.youtube.com/feeds/videos.xml?channel_id=UC5abJGhz74y-cw88wFqX0Jw', 'id': 'UC5abJGhz74y-cw88wFqX0Jw'},
-                    {'url': 'https://www.youtube.com/feeds/videos.xml?channel_id=UCoLxgTtHYNA8AjOJB1rU-2g', 'id': 'UCoLxgTtHYNA8AjOJB1rU-2g'}
+                    {'url': os.getenv('Xecret_Hub_Englsih_Channel'), 'id': 'UC5abJGhz74y-cw88wFqX0Jw'},
+                    {'url': os.getenv('Xecret_Hub_Thailand_Channel'), 'id': 'UCoLxgTtHYNA8AjOJB1rU-2g'}
                 ]
 
                 latest_video = None
@@ -606,7 +542,6 @@ async def send_questions(ctx):
                 embed.set_footer(text=f"https://xecrethub.com | Sent at {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
                 embed.set_image(url=BANNER_URL)
                 await channel.send(embed=embed)
-
 
 @bot.command()
 @commands.has_permissions(administrator=True)
