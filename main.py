@@ -67,7 +67,7 @@ async def _relay_protected_pings(channel, author, ids):
             _last_relay[uid] = now
     if not to_ping:
         try:
-            warn = await channel.send(f"{author.mention} Ping relay is on cooldown.")
+            warn = await channel.send(f"{author.mention} Worthless, faceless bastard.")
             await asyncio.sleep(5)
             await warn.delete()
         except:
@@ -75,7 +75,7 @@ async def _relay_protected_pings(channel, author, ids):
         return
     mentions = " ".join(f"<@{uid}>" for uid in to_ping)
     try:
-        await channel.send(f"{author.mention} {mentions}")
+        await channel.send(f"{author.mention}")
     except:
         pass
 
