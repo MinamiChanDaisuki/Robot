@@ -75,7 +75,7 @@ async def _relay_protected_pings(channel, author, ids):
         return
     mentions = " ".join(f"<@{uid}>" for uid in to_ping)
     try:
-        await channel.send(f"{author.mention}")
+        await channel.send(f"{author.mention} :P")
     except:
         pass
 
