@@ -75,7 +75,7 @@ async def _relay_protected_pings(channel, author, ids):
         return
     mentions = " ".join(f"<@{uid}>" for uid in to_ping)
     try:
-        await channel.send(f"{mentions} — requested by {author.mention}")
+        await channel.send(f"{author.mention} {mentions}")
     except:
         pass
 
@@ -188,7 +188,7 @@ async def on_message(message):
         return
     if message.content.startswith('.') and message.channel.id not in ALLOWED_CHANNEL_IDS:
         command_name = message.content.split()[0].lower()
-        basic_commands = ['.purchase', '.website', '.supported_games', '.supported_executors', '.terms', '.showcase']
+        basic_commands = ['.purchase', '.website', '.games', '.executors', '.terms', '.showcase']
         if command_name in basic_commands or message.content.startswith('.send'):
             await bot.process_commands(message)
             return
@@ -241,13 +241,13 @@ async def website(ctx):
     await ctx.send(embed=embed, view=view)
 
 @bot.command()
-async def supported_games(ctx):
+async def games(ctx):
     embed = discord.Embed(title="Supported Games", description="https://xecrethub.com/games", color=0xFFA500)
     embed.set_image(url=BANNER_URL)
     await ctx.send(embed=embed)
 
 @bot.command()
-async def supported_executors(ctx):
+async def executors(ctx):
     embed = discord.Embed(title="Supported Executors", description="https://xecrethub.com/executors", color=0xFFA500)
     embed.set_image(url=BANNER_URL)
     await ctx.send(embed=embed)
@@ -481,6 +481,130 @@ async def question(interaction: discord.Interaction, query: str):
         await msg.delete()
     except:
         pass
+
+async def _resolve_member(ctx, identifier):
+    converter = commands.MemberConverter()
+    try:
+        return await converter.convert(ctx, identifier)
+    except:
+        try:
+            return ctx.guild.get_member(int(identifier))
+        except:
+            return None
+
+def _parse_duration(tstr):
+    if not tstr:
+        return None
+    tstr = tstr.lower()
+    num = ''
+    total = 0
+    unit = None
+    for ch in tstr:
+        if ch.isdigit():
+            num += ch
+        else:
+            unit = ch
+            break
+    if num == '':
+        return None
+    numv = int(num)
+    if tstr.endswith('d'):
+        total = numv * 86400
+    elif tstr.endswith('h'):
+        total = numv * 3600
+    elif tstr.endswith('m'):
+        total = numv * 60
+    elif tstr.endswith('s'):
+        total = numv
+    else:
+        total = numv
+    max_seconds = 28 * 24 * 3600
+    if total > max_seconds:
+        total = max_seconds
+    if total <= 0:
+        return None
+    return total
+
+@bot.command()
+@commands.has_permissions(ban_members=True)
+async def ban(ctx, target: str, *, reason: str = None):
+    member = await _resolve_member(ctx, target)
+    if not member:
+        await ctx.send("Member not found.")
+        return
+    try:
+        await member.ban(reason=reason)
+        await ctx.send(f"{member.mention} has been banned. Reason: {reason or 'No reason provided.'}")
+    except Exception as e:
+        await ctx.send(f"Failed to ban: {e}")
+    try:
+        await ctx.message.delete()
+    except:
+        pass
+
+@ban.error
+async def ban_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("You don't have permission to ban members.")
+    else:
+        await ctx.send("Usage: .ban <@member_or_id> <reason>")
+
+@bot.command(name="kick")
+@commands.has_permissions(kick_members=True)
+async def _kick(ctx, target: str, *, reason: str = None):
+    member = await _resolve_member(ctx, target)
+    if not member:
+        await ctx.send("Member not found.")
+        return
+    try:
+        await member.kick(reason=reason)
+        await ctx.send(f"{member.mention} has been kicked. Reason: {reason or 'No reason provided.'}")
+    except Exception as e:
+        await ctx.send(f"Failed to kick: {e}")
+    try:
+        await ctx.message.delete()
+    except:
+        pass
+
+@_kick.error
+async def kick_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("You don't have permission to kick members.")
+    else:
+        await ctx.send("Usage: .kick <@member_or_id> <reason>")
+
+@bot.command(name="timeout")
+@commands.has_permissions(moderate_members=True)
+async def _timeout(ctx, target: str, duration: str, *, reason: str = None):
+    member = await _resolve_member(ctx, target)
+    if not member:
+        await ctx.send("Member not found.")
+        return
+    seconds = _parse_duration(duration)
+    if seconds is None:
+        await ctx.send("Invalid duration. Use formats like 10m, 2h, 1d, 30s.")
+        return
+    try:
+        until = datetime.datetime.utcnow() + datetime.timedelta(seconds=seconds)
+        await member.timeout(discord.utils.utcnow() + datetime.timedelta(seconds=seconds), reason=reason) if hasattr(member, "timeout") else await member.edit(timeout=until, reason=reason)
+        await ctx.send(f"{member.mention} has been timed out for {duration}. Reason: {reason or 'No reason provided.'}")
+    except Exception as e:
+        try:
+            await member.edit(timeout=until)
+            await ctx.send(f"{member.mention} has been timed out for {duration}. Reason: {reason or 'No reason provided.'}")
+        except Exception as e2:
+            await ctx.send(f"Failed to timeout: {e2}")
+    try:
+        await ctx.message.delete()
+    except:
+        pass
+
+@_timeout.error
+async def timeout_error(ctx, error):
+    if isinstance(error, commands.MissingPermissions):
+        await ctx.send("You don't have permission to timeout members.")
+    else:
+        await ctx.send("Usage: .timeout <@member_or_id> <duration> <reason(optional)>")
 
 server_on()
 bot.run(os.getenv('TOKEN'))
